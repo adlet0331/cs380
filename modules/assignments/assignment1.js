@@ -36,9 +36,9 @@ export default class Assignment1 extends cs380.BaseApp {
     this.backmesh.addAttribute(3); // position
     this.backmesh.addAttribute(3); // color
     this.backmesh.addVertexData(
-      2, 50, 0, 1, 1, 1,
-      2, -2, 0, 0, 0, 0,
-      -5, -2, 0, 0, 0, 0.1,
+      5, 12, 0, 1, 1, 0,
+      6, -2, 0, 0, 0, 0.7,
+      -5, -2, 0, 1, 1, 0,
     );
 
     this.backmesh.initialize();
@@ -56,6 +56,7 @@ export default class Assignment1 extends cs380.BaseApp {
                             "#88EEFF", "#88DDFF", "#88CCFF", "#88BBFF", "#88AAFF", "#8899FF", "#88B88F", "#8877FF", "#8866FF", "#8855FF", ]
     this.frostObjects = [];
     this.frostObjectsInfo = [];
+    this.treeFlag = [0, 0, 0];
     this.solidshader = await cs380.buildShader(SolidShader);
   }
 
@@ -159,7 +160,7 @@ export default class Assignment1 extends cs380.BaseApp {
     mesh.addVertexData(...point1);
   }
 
-  buildFrost = (N, sx, sy, inithwidth, initLength, drawLength, randomangleadd) => {
+  buildTree = (N, sx, sy, inithwidth, initLength, drawLength, randomangleadd, code) => {
     this.frostmesh = new cs380.Mesh();
     this.frostmesh.finalize();
     this.frostmesh.addAttribute(3); //position
@@ -169,6 +170,7 @@ export default class Assignment1 extends cs380.BaseApp {
     info['angle'] = Math.PI * 0.5
     var startpoint = [];
     startpoint.push(info);
+    let firstInitLength = drawLength;
 
     for(let i = 0; i < N; i++){
       let newstartpoint = [];
@@ -190,29 +192,33 @@ export default class Assignment1 extends cs380.BaseApp {
         newinfo['y'] = startY + initLength * Math.sin(angle)
         newinfo['angle'] = angle + randomangleadd
         newstartpoint.push(newinfo)
-        if (true){
-          let newinfo = {}
-          newinfo['x'] = startX + initLength * Math.cos(angle)
-          newinfo['y'] = startY + initLength * Math.sin(angle)
-          newinfo['angle'] = angle - randomangleadd
-          newstartpoint.push(newinfo)
-        }
+        newinfo = {}
+        newinfo['x'] = startX + initLength * Math.cos(angle)
+        newinfo['y'] = startY + initLength * Math.sin(angle)
+        newinfo['angle'] = angle - randomangleadd
+        newstartpoint.push(newinfo)
       }
       drawLength -= initLength;
-      inithwidth *= 0.9
-      initLength *= 0.8
+      inithwidth *= 0.75
+      initLength *= 0.75
       startpoint = newstartpoint
+    }
+    if(drawLength > 0){
+      if (this.treeFlag[code] == 0){
+        this.beforeLength = firstInitLength;
+      }
+      this.treeFlag[code] = 1;
     }
     this.frostmesh.drawMode = gl.TRIANGLES
     this.frostmesh.initialize();
   }
 
-  addFrost = (N, sx, sy, inithwidth, initLength, colorStr, angle, elapsed) => {
-    this.buildFrost(N, sx, sy, inithwidth, initLength, elapsed, angle)
+  addTree = (N, sx, sy, inithwidth, initLength, colorStr, angle, elapsed, code) => {
+    this.buildTree(N, sx, sy, inithwidth, initLength, elapsed, angle, code)
     let frostObj = new cs380.RenderObject(this.frostmesh, this.solidshader)
     frostObj.uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(frostObj.uniforms.mainColor, colorStr)
-    this.frostObjects.pop();
+    //this.frostObjects.pop();
     this.frostObjects.push(frostObj);
   }
 
@@ -226,10 +232,10 @@ export default class Assignment1 extends cs380.BaseApp {
     // Updates before rendering here
     const makeSnowRandomly = () => {
       const is_make = Math.random()
-      if (is_make > 0.15)
+      if (is_make > 0.5)
         return;
 
-      let r = Math.random() * 0.1 + 0.1
+      let r = Math.random() * 0.1 + 0.02
       let color = this.colorlist[Math.floor(Math.random() * this.colorlist.length)]
       this.addSnowObject(r, color)
 
@@ -239,21 +245,26 @@ export default class Assignment1 extends cs380.BaseApp {
       info['scale'] = 1
       info['sv'] = 0.000003
       info['r'] = r
-      info['x'] = -2
-      info['xv'] = Math.random() * 0.3 + 0.2
+      let leftofright = (Math.random() > 0.5 ? -1 : 1)
+      info['x'] = leftofright * (-1) * Math.random()
+      info['xv'] = (Math.random() * 0.5 + 0.1) * leftofright
       info['yv'] = Math.random() * 0.2 + 0.1
       info['rv'] = (Math.random() * 0.03 + 0.02) * (Math.random() > 0.5 ? -1 : 1)
-      info['y'] = Math.random() * 2
+      info['y'] = Math.random() * 2 + 2
       this.snowObjectsInfo.push(info);
     }
     
     makeSnowRandomly();
 
     if (elapsed == 0){
-      this.random_angle = Math.random() * 0.5 + 0.2;
+      this.random_angle = Math.random() * 0.2 + 0.4;
     }
 
-    this.addFrost(12, 0, -2, 0.01, 0.8, "#AAFFFF", this.random_angle, 2 * elapsed)
+    this.addTree(12, 1, -2, 0.04, 1, "#AAFFFF", this.random_angle, 1.5 * elapsed, 0)
+    
+    if (this.treeFlag[0] == 1){
+      this.addTree(10, 0, -2, 0.02, 0.5, "AAFFFF", this.random_angle, 1.5 * elapsed - this.beforeLength, 1)
+    }
 
     // Clear canvas
     gl.clearColor(0, 0, 0, 1.0);
@@ -265,32 +276,38 @@ export default class Assignment1 extends cs380.BaseApp {
     // Rest of rendering below
     this.background.render(this.camera);
     
+    let new_snowobjects = [];
+    let new_snowInfos = [];
     // snow objects update & rendering
     for(let i=0; i<this.snowObjects.length; i++){
       const obj = this.snowObjects[i];
       const info = this.snowObjectsInfo[i];
       const timepassed = elapsed - info['time']
-      if(-2 + info['xv'] * timepassed > 3)
+      if(Math.abs(info['x'] + info['xv'] * timepassed) > 2)
         continue
 
+      new_snowobjects.push(obj)
+      new_snowInfos.push(info)
       //calculate y pos for animation
       let ypos = info['y'] + dt * info['yv']
       info['y'] = ypos
       info['yv'] -= 0.01
       if(ypos < -2 + info['r'] && elapsed - info['changed'] > 0.5){
-        info['yv'] = info['yv'] * (-1) * (Math.random() * 0.3 + 0.3)
+        info['yv'] = info['yv'] * (-1) * (Math.random() * 0.2 + 0.1)
         info['rv'] *= -1 
         info['changed'] = elapsed
       }
-      vec3.set(obj.transform.localPosition, -2 + info['xv'] * timepassed, ypos, 0)
+      vec3.set(obj.transform.localPosition, info['x'] + info['xv'] * timepassed, ypos, 0)
       quat.rotateZ(obj.transform.localRotation, obj.transform.localRotation, info['rv'])
       obj.render(this.camera);
     }
+    this.snowObjects = new_snowobjects;
+    this.snowObjectsInfo = new_snowInfos;
 
-    // Frost
+    // Tree
     for(let i=0; i<this.frostObjects.length; i++){
       const obj = this.frostObjects[i]
-      cs380.utils.hexToRGB(obj.uniforms.mainColor, this.frostcolorlist[Math.floor((elapsed / 0.05) % 20)])
+      cs380.utils.hexToRGB(obj.uniforms.mainColor, this.frostcolorlist[Math.floor((elapsed / 0.05 + i * 10) % 20)])
 
       obj.render(this.camera)
     }
