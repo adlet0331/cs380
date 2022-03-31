@@ -134,6 +134,76 @@ export function generateSphere(longitudes = 16, latitudes = 8) {
   };
 
   // TODO: Implement sphere generation
+  const addTri = (p0, p1, p2) => {
+    data.vertices.push(...p0, ...p1, ...p2);
+    data.vertexNormals.push(...p0, ...p1, ...p2);
+  }
+
+  const addQuad = (p0, p1, p2, p3) => {
+    addTri(p0, p1, p2);
+    addTri(p0, p2, p3);
+  }
+
+  const angle2xyz = (theta, phi) => [
+    Math.cos(theta) * Math.sin(phi), 
+    Math.cos(phi),
+    -Math.sin(theta) * Math.sin(phi),
+  ];
+
+  // top pole
+  for (let i = 0; i < longitudes; i++){
+    const p0 = [0, 1, 0]
+    const p1 = angle2xyz(
+      (i / longitudes) * 2 * Math.PI,
+      (1 / latitudes) * Math.PI
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / longitudes) * 2 * Math.PI,
+      (1 / latitudes) * Math.PI
+    )
+
+    addTri(p0, p1, p2)
+  }
+
+  // bottom pole
+  for (let i = 0; i < longitudes; i++){
+    const p0 = [0, -1, 0]
+    const p1 = angle2xyz(
+      ((i+1) / longitudes) * 2 * Math.PI,
+      ((latitudes - 1) / latitudes) * Math.PI
+    )
+    const p2 = angle2xyz(
+      (i / longitudes) * 2 * Math.PI,
+      ((latitudes - 1) / latitudes) * Math.PI
+    )
+
+    addTri(p0, p1, p2)
+  }
+
+  // left things
+
+  for (let i = 0; i < longitudes; i++){
+    for (let j = 1; j < latitudes; j++){
+      const p0 = angle2xyz(
+        (i / longitudes) * 2 * Math.PI,
+        (j / latitudes) * Math.PI
+      )
+      const p1 = angle2xyz(
+        (i / longitudes) * 2 * Math.PI,
+        ((j + 1) / latitudes) * Math.PI
+      )
+      const p2 = angle2xyz(
+        ((i + 1) / longitudes) * 2 * Math.PI,
+        ((j + 1) / latitudes) * Math.PI
+      )
+      const p3 = angle2xyz(
+        ((i + 1) / longitudes) * 2 * Math.PI,
+        (j / latitudes) * Math.PI
+      )
+
+      addQuad(p0, p1, p2, p3);
+    }
+  }
 
   return data;
 }

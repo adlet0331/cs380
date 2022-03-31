@@ -25,7 +25,7 @@ export default class Lab4App extends cs380.BaseApp {
     this.thingsToClear = [];
 
     // initialize mesh and shader
-    const cubeMeshData = cs380.primitives.generateCube();
+    const cubeMeshData = cs380.primitives.generateCube(1.5, 1.5, 1.5);
     const cubeMesh = cs380.Mesh.fromData(cubeMeshData);
     const sphereMeshData = cs380.primitives.generateSphere();
     const sphereMesh = cs380.Mesh.fromData(sphereMeshData);
@@ -47,7 +47,21 @@ export default class Lab4App extends cs380.BaseApp {
       1
     );
 
+    this.cube = new cs380.PickableObject(
+      cubeMesh,
+      simpleShader,
+      pickingShader,
+      2
+    );
+
     // TODO : add your own transformations for sphere and cube
+    this.selected_index = 0
+    this.PObjectList = [null, this.sphere, this.cube]
+    this.PObjectRotate = [0, 0, 0]
+    this.PobjectScale = [0, 1, 1]
+
+    vec3.set(this.sphere.transform.localPosition, -1, 0, 0)
+    vec3.set(this.cube.transform.localPosition, 1, 0, 0)
 
     // Event listener for interactions
     this.handleKeyDown = (e) => {
@@ -81,6 +95,38 @@ export default class Lab4App extends cs380.BaseApp {
   onKeyDown(key) {
     // TODO : write down your transformation code
     console.log(`key down: ${key}`);
+
+    if (this.selected_index == 0)
+      return;
+
+    if (key == 'r'){
+      quat.setAxisAngle(
+        this.PObjectList[this.selected_index].transform.localRotation,
+        vec3.normalize(
+          vec3.create(),
+          vec3.fromValues(1,1,1)),
+          this.PObjectRotate[this.selected_index] + Math.PI / 6
+        )
+      this.PObjectRotate[this.selected_index] += Math.PI / 6;
+    }
+
+    if (key == 'ArrowUp'){
+      console.log(this.selected_index);
+      this.PobjectScale[this.selected_index] *= 1.1
+      vec3.set(this.PObjectList[this.selected_index].transform.localScale, 
+        this.PobjectScale[this.selected_index], 
+        this.PobjectScale[this.selected_index], 
+        this.PobjectScale[this.selected_index]);
+    }
+
+    if (key == 'ArrowDown'){
+      console.log(this.selected_index);
+      this.PobjectScale[this.selected_index] *= 0.9
+      vec3.set(this.PObjectList[this.selected_index].transform.localScale, 
+        this.PobjectScale[this.selected_index], 
+        this.PobjectScale[this.selected_index], 
+        this.PobjectScale[this.selected_index]);
+    }
   }
 
   onMouseDown(e) {
@@ -92,7 +138,16 @@ export default class Lab4App extends cs380.BaseApp {
     const index = this.pickingBuffer.pick(x, y);
 
     // TODO : write down your transformation code
+
+    if (index == 0){
+      vec3.set(this.PObjectList[this.selected_index].transform.localPosition, x/200 - 2, y/200 - 2, 0)
+      return;
+    }
+
+    this.selected_index = index
     console.log(`onMouseDown() got index ${index}`);
+    console.log(`${x}, ${y}`);
+
   }
 
   finalize() {
@@ -112,6 +167,7 @@ export default class Lab4App extends cs380.BaseApp {
 
     // TODO : call renderPicking() for the PickableObject
     this.sphere.renderPicking(this.camera);
+    this.cube.renderPicking(this.camera);
 
     // 2. Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -122,5 +178,6 @@ export default class Lab4App extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     this.sphere.render(this.camera);
+    this.cube.render(this.camera);
   }
 }
