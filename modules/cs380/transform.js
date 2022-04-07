@@ -28,7 +28,7 @@ export class Transform {
   }
 
   get worldMatrix() {
-    mat4.fromRotationTranslationScale(
+    let TRS = mat4.fromRotationTranslationScale(
       this._worldMatrix,
       this.localRotation,
       this.localPosition,
@@ -36,6 +36,17 @@ export class Transform {
     );
 
     // TODO: Implement hierarchical frames
+    if (this.parent) {
+      let parentTRS = this.parent.worldMatrix
+      let scale = vec3.create()
+      let parentTRSelseScale = mat4.create()
+
+      vec3.inverse(scale, this.parent.localScale)
+
+      mat4.scale(parentTRSelseScale, parentTRS, scale)
+
+      mat4.multiply(this._worldMatrix, parentTRSelseScale, this.localMatrix)
+    }
 
     return this._worldMatrix;
   }
