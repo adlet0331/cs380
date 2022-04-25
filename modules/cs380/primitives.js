@@ -217,6 +217,46 @@ export function generateCone(sides = 16, radius = 1, height = 1) {
   };
 
   // TODO: Implement cone generation
+  const addTri = (p0, p1, p2) => {
+    data.vertices.push(...p0, ...p1, ...p2);
+    data.vertexNormals.push(...p0, ...p1, ...p2);
+  }
+
+  const angle2xyz = (theta, z) => [
+    radius * Math.cos(theta), 
+    radius * Math.sin(theta),
+    z
+  ];
+
+  // Side Triangles
+  for (let i = 0; i < sides; i++){
+    const p0 = [0, 0, height]
+    const p1 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      0
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      0
+    )
+
+    addTri(p0, p1, p2)
+  }
+
+  // bottom circle
+  for (let i = 0; i < sides; i++){
+    const p0 = [0, 0, 0]
+    const p1 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      0
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      0
+    )
+
+    addTri(p0, p1, p2)
+  }
 
   return data;
 }
@@ -230,6 +270,73 @@ export function generateCylinder(sides = 16, radius = 1, height = 1) {
   };
 
   // TODO: Implement cylinder generation
+  const addTri = (p0, p1, p2) => {
+    data.vertices.push(...p0, ...p1, ...p2);
+    data.vertexNormals.push(...p0, ...p1, ...p2);
+  }
+
+  const addQuad = (p0, p1, p2, p3) => {
+    addTri(p0, p1, p2);
+    addTri(p0, p2, p3);
+  }
+
+  const angle2xyz = (theta, h) => [
+    radius * Math.cos(theta), 
+    radius * Math.sin(theta),
+    h
+  ];
+
+  // Top circle
+  for (let i = 0; i < sides; i++){
+    const p0 = [0, 0, height]
+    const p1 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      height
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      height
+    )
+
+    addTri(p0, p1, p2)
+  }
+
+  // Side Squares
+  for (let i = 0; i < sides; i++){
+    const p0 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      0
+    )
+    const p1 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      0
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      height
+    )
+    const p3 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      height
+    )
+
+    addQuad(p0, p1, p2, p3)
+  }
+
+  // Bottom circle
+  for (let i = 0; i < sides; i++){
+    const p0 = [0, 0, 0]
+    const p1 = angle2xyz(
+      (i / sides) * 2 * Math.PI,
+      0
+    )
+    const p2 = angle2xyz(
+      ((i + 1) / sides) * 2 * Math.PI,
+      0
+    )
+
+    addTri(p0, p1, p2)
+  }
 
   return data;
 }

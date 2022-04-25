@@ -145,6 +145,8 @@ export default class Assignment2 extends cs380.BaseApp {
     setfrontpixel(this.downmustache6, 0.75, -0.75, 2.05);
     // Head end
 
+    // Body
+
     // Event listener for interactions
     this.handleKeyDown = (e) => {
       // e.repeat is true when the key has been helded for a while
@@ -232,7 +234,6 @@ export default class Assignment2 extends cs380.BaseApp {
       obj.render(this.camera)
     }
     // Move
-
 
   }
 }
