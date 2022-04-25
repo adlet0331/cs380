@@ -22,7 +22,12 @@ export default class Assignment2 extends cs380.BaseApp {
 
     this.thingsToClear = [];
 
-    this.apricot = "#FBCEB1"
+    this.apricot = "#BD8274"
+    this.purple = "660099"
+    this.white = "FFFFFF"
+    this.haircolor = "#331810"
+    this.upmustachecolor = "#453810"
+    this.mustachecolor = "551810"
 
     // SimpleOrbitControl
     const orbitControlCenter = vec3.fromValues(0, 0, 0);
@@ -88,9 +93,15 @@ export default class Assignment2 extends cs380.BaseApp {
       return object
     }
 
+    const setfrontpixel = (object, x, y, z) => {
+      quat.rotateX(object.transform.localRotation, object.transform.localRotation, Math.PI);
+      vec3.set(object.transform.localPosition, x, y, z);
+    }
+
     //initialize Object Mesh
     const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
     const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
+    const headpixelmesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(0.5, 0.5));
 
     this.thingsToClear.push(headCubeMesh, headHairMesh);
 
@@ -100,9 +111,39 @@ export default class Assignment2 extends cs380.BaseApp {
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
 
+    // Head
     this.headCube = generateMesh(headCubeMesh, this.apricot, 1, null);
-    this.headHair = generateMesh(headHairMesh, "#111111", 1, this.headCube);
+    this.headHair = generateMesh(headHairMesh, this.haircolor, 1, this.headCube);
     vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
+    this.headfrontleftHair = generateMesh(headpixelmesh, this.haircolor, 1, this.headCube);
+    setfrontpixel(this.headfrontleftHair, -1.75, 1.25, 2.05);
+    this.headfrontrightHair = generateMesh(headpixelmesh, this.haircolor, 1, this.headCube);
+    setfrontpixel(this.headfrontrightHair, 1.75, 1.25, 2.05);
+    this.headleftEye = generateMesh(headpixelmesh, this.purple, 1, this.headCube);
+    setfrontpixel(this.headleftEye, -0.75, 0.25, 2.05);
+    this.headrightEye = generateMesh(headpixelmesh, this.purple, 1, this.headCube);
+    setfrontpixel(this.headrightEye, 0.75, 0.25, 2.05);
+    this.headWhiteleftEye = generateMesh(headpixelmesh, this.white, 1, this.headCube);
+    setfrontpixel(this.headWhiteleftEye, -1.25, 0.25, 2.05);
+    this.headrightWhiteEye = generateMesh(headpixelmesh, this.white, 1, this.headCube);
+    setfrontpixel(this.headrightWhiteEye, 1.25, 0.25, 2.05);
+    this.uppermustache1 = generateMesh(headpixelmesh, this.upmustachecolor, 1, this.headCube);
+    setfrontpixel(this.uppermustache1, -0.25, -0.25, 2.05);
+    this.uppermustache2 = generateMesh(headpixelmesh, this.upmustachecolor, 1, this.headCube);
+    setfrontpixel(this.uppermustache2, 0.25, -0.25, 2.05);
+    this.downmustache1 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache1, -0.75, -0.75, 2.05);
+    this.downmustache2 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache2, -0.75, -1.25, 2.05);
+    this.downmustache3 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache3, -0.25, -1.25, 2.05);
+    this.downmustache4 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache4, 0.25, -1.25, 2.05);
+    this.downmustache5 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache5, 0.75, -1.25, 2.05);
+    this.downmustache6 = generateMesh(headpixelmesh, this.mustachecolor, 1, this.headCube);
+    setfrontpixel(this.downmustache6, 0.75, -0.75, 2.05);
+    // Head end
 
     // Event listener for interactions
     this.handleKeyDown = (e) => {
