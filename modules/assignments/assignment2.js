@@ -11,7 +11,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 50);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 60);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -22,6 +22,8 @@ export default class Assignment2 extends cs380.BaseApp {
 
     this.thingsToClear = [];
 
+    this.apricot = "#FBCEB1"
+
     // SimpleOrbitControl
     const orbitControlCenter = vec3.fromValues(0, 0, 0);
     this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
@@ -31,38 +33,35 @@ export default class Assignment2 extends cs380.BaseApp {
     this.thingsToClear.push(this.simpleOrbitControl);
 
     // Mesh & Shader
-    const sphereMeshData = cs380.primitives.generateSphere();
-    const sphereMesh = cs380.Mesh.fromData(sphereMeshData);
     const simpleShader = await cs380.buildShader(SimpleShader);
-    this.thingsToClear.push(sphereMesh, simpleShader);
+    this.thingsToClear.push(simpleShader);
 
     // Generate Plane
-    this.planeX = 30
-    this.planeY = 30
+    this.planeX = 40
+    this.planeY = 40
     this.planeZ = 30
-    this.planeColorStr = "#888888"
     const planeBackMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
     const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
-    const planeRightMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeY, this.planeZ));
-    const planeBottomMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
+    const planeRightMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
+    const planeBottomMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeZ));
     
     this.planeBack = new cs380.RenderObject(planeBackMesh, simpleShader);
     quat.rotateX(this.planeBack.transform.localRotation, this.planeBack.transform.localRotation, Math.PI);
     vec3.set(this.planeBack.transform.localPosition, 0, 0, - this.planeZ / 2);
     this.planeBack.uniforms.mainColor = vec3.create();
-    cs380.utils.hexToRGB(this.planeBack.uniforms.mainColor, this.planeColorStr);
+    cs380.utils.hexToRGB(this.planeBack.uniforms.mainColor, "#888888");
 
     this.planeLeft = new cs380.RenderObject(planeLeftMesh, simpleShader);
     quat.rotateY(this.planeLeft.transform.localRotation, this.planeLeft.transform.localRotation, - Math.PI / 2);
     vec3.set(this.planeLeft.transform.localPosition, - this.planeX / 2, 0, 0);
     this.planeLeft.uniforms.mainColor = vec3.create();
-    cs380.utils.hexToRGB(this.planeLeft.uniforms.mainColor, this.planeColorStr);
+    cs380.utils.hexToRGB(this.planeLeft.uniforms.mainColor, "#BBBBBB");
 
     this.planeRight = new cs380.RenderObject(planeRightMesh, simpleShader);
     quat.rotateY(this.planeRight.transform.localRotation, this.planeRight.transform.localRotation, Math.PI / 2);
     vec3.set(this.planeRight.transform.localPosition, this.planeX / 2, 0, 0);
     this.planeRight.uniforms.mainColor = vec3.create();
-    cs380.utils.hexToRGB(this.planeRight.uniforms.mainColor, this.planeColorStr);
+    cs380.utils.hexToRGB(this.planeRight.uniforms.mainColor, "#888888");
 
     this.planeBottom = new cs380.RenderObject(planeBottomMesh, simpleShader);
     quat.rotateX(this.planeBottom.transform.localRotation, this.planeBottom.transform.localRotation, Math.PI / 2);
@@ -71,20 +70,39 @@ export default class Assignment2 extends cs380.BaseApp {
     cs380.utils.hexToRGB(this.planeBottom.uniforms.mainColor, "#000000");
     // Generate Plane End
 
+    this.objectList = []
+
+    const generateMesh = (mesh, color, index, parent) => {
+      let object = new cs380.PickableObject(
+        mesh,
+        simpleShader,
+        pickingShader,
+        1
+      );
+      object.uniforms.mainColor = vec3.create();
+      cs380.utils.hexToRGB(object.uniforms.mainColor, color);
+      if (parent != null){
+        object.transform.setParent(parent.transform);
+      }
+      this.objectList.push(object);
+      return object
+    }
+
+    //initialize Object Mesh
+    const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
+    const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
+
+    this.thingsToClear.push(headCubeMesh, headHairMesh);
+
     // initialize picking shader & buffer
     const pickingShader = await cs380.buildShader(cs380.PickingShader);
     this.pickingBuffer = new cs380.PickingBuffer();
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
 
-    this.sphere = new cs380.PickableObject(
-      sphereMesh,
-      simpleShader,
-      pickingShader,
-      1
-    );
-    this.sphere.uniforms.mainColor = vec3.create();
-    cs380.utils.hexToRGB(this.sphere.uniforms.mainColor, "#00FF00");
+    this.headCube = generateMesh(headCubeMesh, this.apricot, 1, null);
+    this.headHair = generateMesh(headHairMesh, "#111111", 1, this.headCube);
+    vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
 
     // Event listener for interactions
     this.handleKeyDown = (e) => {
@@ -153,7 +171,7 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // renderPicking() here
-    this.sphere.renderPicking(this.camera);
+    this.headCube.renderPicking(this.camera);
 
     // Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -164,10 +182,16 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // render() here
-    this.sphere.render(this.camera);
     this.planeBack.render(this.camera);
     this.planeLeft.render(this.camera);
     this.planeRight.render(this.camera);
     this.planeBottom.render(this.camera);
+    for(let i = 0; i < this.objectList.length; i++){
+      const obj = this.objectList[i]
+      obj.render(this.camera)
+    }
+    // Move
+
+
   }
 }
