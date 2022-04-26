@@ -98,7 +98,7 @@ export default class Assignment2 extends cs380.BaseApp {
       return object
     }
 
-    const setpixel = (object, x, y, z, angle = Math.PI) => {
+    const setPixelPos = (object, x, y, z, angle = Math.PI) => {
       quat.rotateX(object.transform.localRotation, object.transform.localRotation, angle);
       vec3.set(object.transform.localPosition, x, y, z);
     }
@@ -117,7 +117,9 @@ export default class Assignment2 extends cs380.BaseApp {
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
-    this.thingsToClear.push(headCubeMesh, headHairMesh);
+    this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelmesh, bodyCubeMesh, bodyDownCubeMesh);
+    this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
+    this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh);
 
     // initialize picking shader & buffer
     const pickingShader = await cs380.buildShader(cs380.PickingShader);
@@ -138,33 +140,33 @@ export default class Assignment2 extends cs380.BaseApp {
     this.headHair = generateMesh(headHairMesh, this.haircolor, 1, this.headCube);
     vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
     this.headfrontleftHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube);
-    setpixel(this.headfrontleftHair, -1.75, 1.25, 2.05);
+    setPixelPos(this.headfrontleftHair, -1.75, 1.25, 2.05);
     this.headfrontrightHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube);
-    setpixel(this.headfrontrightHair, 1.75, 1.25, 2.05);
+    setPixelPos(this.headfrontrightHair, 1.75, 1.25, 2.05);
     this.headleftEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube);
-    setpixel(this.headleftEye, -0.75, 0.25, 2.05);
+    setPixelPos(this.headleftEye, -0.75, 0.25, 2.05);
     this.headrightEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube);
-    setpixel(this.headrightEye, 0.75, 0.25, 2.05);
+    setPixelPos(this.headrightEye, 0.75, 0.25, 2.05);
     this.headWhiteleftEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube);
-    setpixel(this.headWhiteleftEye, -1.25, 0.25, 2.05);
+    setPixelPos(this.headWhiteleftEye, -1.25, 0.25, 2.05);
     this.headrightWhiteEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube);
-    setpixel(this.headrightWhiteEye, 1.25, 0.25, 2.05);
+    setPixelPos(this.headrightWhiteEye, 1.25, 0.25, 2.05);
     this.uppermustache1 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube);
-    setpixel(this.uppermustache1, -0.25, -0.25, 2.05);
+    setPixelPos(this.uppermustache1, -0.25, -0.25, 2.05);
     this.uppermustache2 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube);
-    setpixel(this.uppermustache2, 0.25, -0.25, 2.05);
+    setPixelPos(this.uppermustache2, 0.25, -0.25, 2.05);
     this.downmustache1 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache1, -0.75, -0.75, 2.05);
+    setPixelPos(this.downmustache1, -0.75, -0.75, 2.05);
     this.downmustache2 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache2, -0.75, -1.25, 2.05);
+    setPixelPos(this.downmustache2, -0.75, -1.25, 2.05);
     this.downmustache3 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache3, -0.25, -1.25, 2.05);
+    setPixelPos(this.downmustache3, -0.25, -1.25, 2.05);
     this.downmustache4 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache4, 0.25, -1.25, 2.05);
+    setPixelPos(this.downmustache4, 0.25, -1.25, 2.05);
     this.downmustache5 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache5, 0.75, -1.25, 2.05);
+    setPixelPos(this.downmustache5, 0.75, -1.25, 2.05);
     this.downmustache6 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
-    setpixel(this.downmustache6, 0.75, -0.75, 2.05);
+    setPixelPos(this.downmustache6, 0.75, -0.75, 2.05);
     // Head end
 
     // Right Arm
@@ -258,7 +260,10 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // renderPicking() here
-    this.headCube.renderPicking(this.camera);
+    for(let i = 0; i < this.objectList.length; i++){
+      const obj = this.objectList[i]
+      obj.renderPicking(this.camera)
+    }
 
     // Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
