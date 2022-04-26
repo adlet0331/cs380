@@ -174,12 +174,10 @@ export default class Assignment2 extends cs380.BaseApp {
     vec3.set(this.rightArmClothCube.transform.localPosition, 3, 1.5, 0);
     this.rigthUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.rightArmClothCube);
     vec3.set(this.rigthUpArmCube.transform.localPosition, 0, -1.5, 0);
-    this.rigthDowwnArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.rigthUpArmCube);
-    vec3.set(this.rigthDowwnArmCube.transform.localPosition, 0, -2, 0);
+    this.rigthDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.rigthUpArmCube);
+    vec3.set(this.rigthDownArmCube.transform.localPosition, 0, -2, 0);
 
     // Left Arm
-    this.leftArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 4, this.bodyCube);
-    vec3.set(this.leftArmClothCube.transform.localPosition, -3, 1.5, 0);
 
     // Right Leg
     this.rightUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 5, this.bodyCube);
@@ -223,6 +221,31 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
     gl.frontFace(gl.CCW);
+
+    const vec3create = (obj) => {
+      return vec3.create(obj.transform.localPosition[0], obj.transform.localPosition[1], obj.transform.localPosition[2]);      
+    }
+
+    const quatcreate = (obj) => {
+      return quat.create(obj.transform.localRotation[0], obj.transform.localRotation[1], obj.transform.localRotation[2], obj.transform.localRotation[3]);
+    }
+
+    // Make Animation Scene Start
+
+    // Make Animation Scene End
+
+    // animation infos
+    this.animationInfoDict = [];
+
+    let info = [];
+    info["bodyT"] = vec3create(this.bodyCube);
+    info["bodyR"] = quatcreate(this.bodyCube);
+    info["headR"] = quatcreate(this.headCube);
+    info["armRCR"] = quatcreate(this.rightArmClothCube);
+    info["armRDR"] = quatcreate(this.rigthDownArmCube);
+    info["legRUR"] = quatcreate(this.rightUpLegCube);
+    info["legRDR"] = quatcreate(this.rightDownLegCube);
+    this.animationInfoDict["default"] = info;
   }
 
   onKeyDown(key) {
@@ -282,7 +305,7 @@ export default class Assignment2 extends cs380.BaseApp {
       const obj = this.objectList[i]
       obj.render(this.camera)
     }
-    // Move
+    // Animation
 
   }
 }
