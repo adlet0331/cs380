@@ -103,7 +103,7 @@ export default class Assignment2 extends cs380.BaseApp {
       vec3.set(object.transform.localPosition, x, y, z);
     }
 
-    //initialize Object Mesh
+    // Initialize Object Mesh
     const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
     const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
     const unitpixelmesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(0.5, 0.5));
@@ -230,11 +230,11 @@ export default class Assignment2 extends cs380.BaseApp {
       return quat.create(obj.transform.localRotation[0], obj.transform.localRotation[1], obj.transform.localRotation[2], obj.transform.localRotation[3]);
     }
 
-    // Make Animation Scene Start
+    // Animation Status Handling 
+    this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
+    this.currentStatusKey = "default"
 
-    // Make Animation Scene End
-
-    // animation infos
+    // Animation infos
     this.animationInfoDict = [];
 
     let info = [];
@@ -246,6 +246,14 @@ export default class Assignment2 extends cs380.BaseApp {
     info["legRUR"] = quatcreate(this.rightUpLegCube);
     info["legRDR"] = quatcreate(this.rightDownLegCube);
     this.animationInfoDict["default"] = info;
+
+    // Make Animation Scene Start
+
+    // Make Animation Scene End
+  }
+
+  updateAnimation(elapsed){
+
   }
 
   onKeyDown(key) {
