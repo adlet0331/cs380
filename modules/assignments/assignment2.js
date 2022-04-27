@@ -239,37 +239,107 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.cullFace(gl.BACK);
     gl.frontFace(gl.CCW);
 
-    const vec3create = (obj) => {
-      return vec3.create(obj.transform.localPosition[0], obj.transform.localPosition[1], obj.transform.localPosition[2]);      
+    const vec3create = (transf) => {
+      return vec3.fromValues(transf[0], transf[1], transf[2]);      
     }
 
-    const quatcreate = (obj) => {
-      return quat.create(obj.transform.localRotation[0], obj.transform.localRotation[1], obj.transform.localRotation[2], obj.transform.localRotation[3]);
+    const quatcreate = (transf) => {
+      return quat.fromValues(transf[0], transf[1], transf[2], transf[3]);
     }
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
     this.currentStatusKey = "default"
+    this.animationStartTime = 0
+    this.isAnimationRunning = false
+    this.startTransformationArchieve;
 
     // Animation infos
     this.animationInfoDict = [];
 
-    let info = [];
-    info["bodyT"] = vec3create(this.bodyCube);
-    info["bodyR"] = quatcreate(this.bodyCube);
-    info["headR"] = quatcreate(this.headCube);
-    info["armRCR"] = quatcreate(this.rightArmClothCube);
-    info["armRDR"] = quatcreate(this.rigthDownArmCube);
-    info["legRUR"] = quatcreate(this.rightUpLegCube);
-    info["legRDR"] = quatcreate(this.rightDownLegCube);
-    this.animationInfoDict["default"] = info;
+    const createAnimation = (keyString, animationData, totalT, waitT, retT) => {
+      let dict = [];
+      dict["num"] = animationData.length;
+      console.log("Animation keyframe len: " + dict["num"]);
+      dict["totalTime"] = totalT;
+      dict["waitTime"] = waitT;
+      dict["returnTime"] = retT;
 
-    // Make Animation Scene Start
+      let datalist = [];
+      for(let i = 0; i < animationData.length; i++){
+        dict["timeRatio"] = animationData[i]["timeRatio"];
+        let data = [];
+        data["bodyT"] = vec3create(animationData[i]["bodyT"]);
+        data["bodyR"] = quatcreate(animationData[i]["bodyR"]);
+        data["head"] = quatcreate(animationData[i]["head"]);
+        data["armR1"] = quatcreate(animationData[i]["armR1"]);
+        data["armR2"] = quatcreate(animationData[i]["armR2"]);
+        data["legR1"] = quatcreate(animationData[i]["legR1"]);
+        data["legR2"] = quatcreate(animationData[i]["legR2"]);
+        datalist.push(data);
+      }
 
-    // Make Animation Scene End
+      dict["dataList"] = datalist;
+      this.animationInfoDict[keyString] = dict;
+    }
+
+    // Construct Animation
+
+    const hPi = Math.PI / 2;
+
+    // Default
+    let defaultData = [];
+    let defaultKeyframe1 = [];
+    defaultKeyframe1["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
+    defaultKeyframe1["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
+    defaultKeyframe1["head"] = quatcreate(this.headjoint.localRotation);
+    defaultKeyframe1["armR1"] = quatcreate(this.rightArmjoint.localRotation);
+    defaultKeyframe1["armR2"] = quatcreate(this.rightArmMidjoint.localRotation);
+    defaultKeyframe1["legR1"] = quatcreate(this.rightLegjoint.localRotation);
+    defaultKeyframe1["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
+    defaultKeyframe1["timeRatio"] = 1;
+    defaultData.push(defaultKeyframe1);
+    createAnimation("default", defaultData, 1);
+
+    // Walk
+
+    // Sit
+    let sitData = [];
+    let sitKeyframe1 = [];
+    sitKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
+    sitKeyframe1["bodyR"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
+    sitKeyframe1["head"] = new quat.fromValues(0, 0, 0, 1);
+    sitKeyframe1["armR1"] = new quat.fromValues(0, 0, 0, 1);
+    sitKeyframe1["armR2"] = new quat.fromValues(0, 0, 0, 1);
+    sitKeyframe1["legR1"] = new quat.fromValues(hPi, 0, 0, 1);
+    sitKeyframe1["legR2"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
+    sitKeyframe1["timeRatio"] = 1;
+    sitData.push(sitKeyframe1);
+    createAnimation("sit", sitData, 1, 2, 1);
+
+    console.log(this.animationInfoDict["sit"]);
+
   }
 
-  updateAnimation(elapsed){
+  archieveCurrentStatus = () => {
+    let data = [];
+    data["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
+    data["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
+    data["head"] = quatcreate(this.headjoint.localRotation);
+    data["armR1"] = quatcreate(this.rightArmjoint.localRotation);
+    data["armR2"] = quatcreate(this.rightArmMidjoint.localRotation);
+    data["legR1"] = quatcreate(this.rightLegjoint.localRotation);
+    data["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
+    this.startTransformationArchieve = data;
+  }
+
+  updateAnimation(elapsed, statusIdx){
+    if(statusIdx != null && this.animationStatusList[statusIdx] != null){
+      console.log(this.animationStatusList[statusIdx]);
+      this.currentStatusKey = this.animationStatusList[statusIdx];
+      this.isAnimationRunning = true
+      this.animationStartTime = elapsed
+    }
 
   }
 
