@@ -251,23 +251,24 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
     this.currentStatusKey = "default"
     this.animationStartTime = 0
+    this.animationKeyframeIndex = 0
     this.isAnimationRunning = false
     this.startTransformationArchieve;
 
     // Animation infos
     this.animationInfoDict = [];
 
-    const createAnimation = (keyString, animationData, totalT, waitT, retT) => {
+    const createAnimation = (keyString, animationData, totalT, waitT, retT, ratioList) => {
       let dict = [];
       dict["num"] = animationData.length;
       console.log("Animation keyframe len: " + dict["num"]);
       dict["totalTime"] = totalT;
       dict["waitTime"] = waitT;
       dict["returnTime"] = retT;
+      dict["keyFrameRatioList"] = ratioList;
 
       let datalist = [];
       for(let i = 0; i < animationData.length; i++){
-        dict["timeRatio"] = animationData[i]["timeRatio"];
         let data = [];
         data["bodyT"] = vec3create(animationData[i]["bodyT"]);
         data["bodyR"] = quatcreate(animationData[i]["bodyR"]);
@@ -299,7 +300,8 @@ export default class Assignment2 extends cs380.BaseApp {
     defaultKeyframe1["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
     defaultKeyframe1["timeRatio"] = 1;
     defaultData.push(defaultKeyframe1);
-    createAnimation("default", defaultData, 1);
+    let defaultRatioList = [1]
+    createAnimation("default", defaultData, 1, 1, 1, defaultRatioList);
 
     // Walk
 
@@ -308,14 +310,14 @@ export default class Assignment2 extends cs380.BaseApp {
     let sitKeyframe1 = [];
     sitKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
     sitKeyframe1["bodyR"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
-    sitKeyframe1["head"] = new quat.fromValues(0, 0, 0, 1);
+    sitKeyframe1["head"] = new quat.fromValues(hPi / 2, 0, 0, 1);
     sitKeyframe1["armR1"] = new quat.fromValues(0, 0, 0, 1);
     sitKeyframe1["armR2"] = new quat.fromValues(0, 0, 0, 1);
     sitKeyframe1["legR1"] = new quat.fromValues(hPi, 0, 0, 1);
     sitKeyframe1["legR2"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
-    sitKeyframe1["timeRatio"] = 1;
     sitData.push(sitKeyframe1);
-    createAnimation("sit", sitData, 1, 2, 1);
+    let sitFrameList = [1];
+    createAnimation("sit", sitData, 1, 2, 1, sitFrameList);
 
     console.log(this.animationInfoDict["sit"]);
 
@@ -333,12 +335,50 @@ export default class Assignment2 extends cs380.BaseApp {
     this.startTransformationArchieve = data;
   }
 
-  updateAnimation(elapsed, statusIdx){
-    if(statusIdx != null && this.animationStatusList[statusIdx] != null){
-      console.log(this.animationStatusList[statusIdx]);
-      this.currentStatusKey = this.animationStatusList[statusIdx];
-      this.isAnimationRunning = true
-      this.animationStartTime = elapsed
+  setAnimationStatus(idx){
+    console.log(this.animationStatusList[statusIdx]);
+    this.currentStatusKey = this.animationStatusList[statusIdx];
+    this.isAnimationRunning = true
+    this.animationStartTime = elapsed
+  }
+
+  animationMove(fromT, toT, ratio){
+    let x = toT.localPosition[0] + (toT.localPosition[0] -  fromT.localPosition[0]) * ratio;
+    let y = toT.localPosition[1] + (toT.localPosition[1] -  fromT.localPosition[1]) * ratio;
+    let z = toT.localPosition[2] + (toT.localPosition[2] -  fromT.localPosition[2]) * ratio;
+    
+    vec3.set(toT.localPosition, x, y, z);
+  }
+
+  animationRotate(fromT, toT, ratio){
+    let x = (toT.localRotation[0] -  fromT.localRotation[0]) * ratio;
+    let y = (toT.localRotation[1] -  fromT.localRotation[1]) * ratio;
+    let z = (toT.localRotation[2] -  fromT.localRotation[2]) * ratio;
+
+    quat.rotateX(toT.localRotation, toT.localRotation, x);
+    quat.rotateY(toT.localRotation, toT.localRotation, y);
+    quat.rotateZ(toT.localRotation, toT.localRotation, z);
+  }
+
+  updateAnimation(elapsed){
+    // Only One Animation at a time 
+    let currentAnimationInfo = this.animationInfoDict[this.currentStatusKey];
+    let totalTime = currentAnimationInfo["totaltime"];
+    let totalFrame = currentAnimationInfo["num"];
+    if (totalFrame != currentAnimationInfo["dataList"].length){
+      console.log("Error! " + currentAnimationInfo + " DataList Length is Different!");
+    }
+    
+    if (!this.isAnimationRunning) return;
+    if (elapsed - this.animationStartTime > totalTime){
+      this.isAnimationRunning = false;
+      return;
+    }
+
+    let idx = 0;
+    let ratioList = currentAnimationInfo["ratio"]
+    for (let i = 0; i< currentAnimationInfo["num"]; i++){
+
     }
 
   }
@@ -401,7 +441,6 @@ export default class Assignment2 extends cs380.BaseApp {
       obj.render(this.camera)
     }
     // Animation
-    //quat.rotateX(this.rightLegMidjoint.localRotation, this.rightLegMidjoint.localRotation, dt);
-    //console.log(this.headjoint.localRotation);
+    this.updateAnimation(elapsed);
   }
 }
