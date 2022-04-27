@@ -253,6 +253,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationStartTime = 0
     this.animationKeyframeIndex = 0
     this.isAnimationRunning = false
+    this.firstInput = false
     this.startTransformationArchieve;
 
     // Animation infos
@@ -262,7 +263,7 @@ export default class Assignment2 extends cs380.BaseApp {
       let dict = [];
       dict["num"] = animationData.length;
       console.log("Animation keyframe len: " + dict["num"]);
-      dict["totalTime"] = totalT;
+      dict["animationTime"] = totalT;
       dict["waitTime"] = waitT;
       dict["returnTime"] = retT;
       dict["keyFrameRatioList"] = ratioList;
@@ -308,13 +309,13 @@ export default class Assignment2 extends cs380.BaseApp {
     // Sit
     let sitData = [];
     let sitKeyframe1 = [];
-    sitKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
-    sitKeyframe1["bodyR"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
-    sitKeyframe1["head"] = new quat.fromValues(hPi / 2, 0, 0, 1);
+    sitKeyframe1["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    sitKeyframe1["bodyR"] = new quat.fromValues(hPi / 6, 0, 0, 1);
+    sitKeyframe1["head"] = new quat.fromValues(- hPi / 6, 0, 0, 1);
     sitKeyframe1["armR1"] = new quat.fromValues(0, 0, 0, 1);
     sitKeyframe1["armR2"] = new quat.fromValues(0, 0, 0, 1);
-    sitKeyframe1["legR1"] = new quat.fromValues(hPi, 0, 0, 1);
-    sitKeyframe1["legR2"] = new quat.fromValues(- hPi / 2, 0, 0, 1);
+    sitKeyframe1["legR1"] = new quat.fromValues(- hPi / 3, 0, 0, 1);
+    sitKeyframe1["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
     createAnimation("sit", sitData, 1, 2, 1, sitFrameList);
@@ -336,54 +337,103 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   setAnimationStatus(idx){
-    console.log(this.animationStatusList[statusIdx]);
-    this.currentStatusKey = this.animationStatusList[statusIdx];
+    console.log(this.animationStatusList[idx]);
+    this.currentStatusKey = this.animationStatusList[idx];
     this.isAnimationRunning = true
-    this.animationStartTime = elapsed
+    this.firstInput = true
   }
 
-  animationMove(fromT, toT, ratio){
-    let x = toT.localPosition[0] + (toT.localPosition[0] -  fromT.localPosition[0]) * ratio;
-    let y = toT.localPosition[1] + (toT.localPosition[1] -  fromT.localPosition[1]) * ratio;
-    let z = toT.localPosition[2] + (toT.localPosition[2] -  fromT.localPosition[2]) * ratio;
+  animationMove(fromvect, tovect , ratio){
+    let x = fromvect[0] + (tovect[0] -  fromvect[0]) * ratio;
+    let y = fromvect[1] + (tovect[1] -  fromvect[1]) * ratio;
+    let z = fromvect[2] + (tovect[2] -  fromvect[2]) * ratio;
     
-    vec3.set(toT.localPosition, x, y, z);
+    vec3.set(fromvect, x, y, z);
   }
 
   animationRotate(fromT, toT, ratio){
-    let x = (toT.localRotation[0] -  fromT.localRotation[0]) * ratio;
-    let y = (toT.localRotation[1] -  fromT.localRotation[1]) * ratio;
-    let z = (toT.localRotation[2] -  fromT.localRotation[2]) * ratio;
+    let x = (toT[0] -  fromT[0]) * ratio;
+    let y = (toT[1] -  fromT[1]) * ratio;
+    let z = (toT[2] -  fromT[2]) * ratio;
 
-    quat.rotateX(toT.localRotation, toT.localRotation, x);
-    quat.rotateY(toT.localRotation, toT.localRotation, y);
-    quat.rotateZ(toT.localRotation, toT.localRotation, z);
+    quat.rotateX(fromT, fromT, x);
+    quat.rotateY(fromT, fromT, y);
+    quat.rotateZ(fromT, fromT, z);
   }
 
   updateAnimation(elapsed){
-    // Only One Animation at a time 
+    // Only One Animation at a time
+    if (this.firstInput){
+      this.animationStartTime = elapsed;
+      this.firstInput = false;
+    }
+
+    if (!this.isAnimationRunning) return;
+
     let currentAnimationInfo = this.animationInfoDict[this.currentStatusKey];
-    let totalTime = currentAnimationInfo["totaltime"];
+
+    let animationTime = currentAnimationInfo["animationTime"];
+    let waitTime = currentAnimationInfo["waitTime"];
+    let returnTime = currentAnimationInfo["returnTime"];
+    let totalTime = animationTime + waitTime + returnTime;
     let totalFrame = currentAnimationInfo["num"];
+
     if (totalFrame != currentAnimationInfo["dataList"].length){
       console.log("Error! " + currentAnimationInfo + " DataList Length is Different!");
     }
-    
-    if (!this.isAnimationRunning) return;
-    if (elapsed - this.animationStartTime > totalTime){
+
+    let timePassed = elapsed - this.animationStartTime;
+    if (timePassed > totalTime){
       this.isAnimationRunning = false;
+      return;
+    }
+    if (timePassed > animationTime && timePassed < animationTime + waitTime){
+      return;
+    }
+    // Return to Default state
+    if (timePassed > animationTime + waitTime){
+      // Now Play KeyFrame Animation
+      currentAnimationInfo = this.animationInfoDict["default"]
+      let ratioList = currentAnimationInfo["keyFrameRatioList"];
+      let currentKeyframeData = currentAnimationInfo["dataList"][0];
+      let currentMoveRatio = 0.5
+      this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+      this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+      this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+      this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
+      this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+      this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+      this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
       return;
     }
 
     let idx = 0;
-    let ratioList = currentAnimationInfo["ratio"]
+    let ratioList = currentAnimationInfo["keyFrameRatioList"];
+    let accumulatedRatio = 0;
     for (let i = 0; i< currentAnimationInfo["num"]; i++){
-
+      let currentRatio = ratioList[i];
+      if (timePassed >= accumulatedRatio * animationTime && timePassed <= animationTime * (accumulatedRatio + currentRatio)){
+        idx = i;
+        break;
+      }
     }
-
+    // Now Play KeyFrame Animation
+    let currentKeyframeData = currentAnimationInfo["dataList"][idx];
+    let currentMoveRatio = (timePassed - accumulatedRatio * animationTime) / (animationTime)
+    this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+    this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+    this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+    this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
+    this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+    this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+    this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
   }
 
   onKeyDown(key) {
+    if (key == "Shift"){
+      console.log("Sit");
+      this.setAnimationStatus(2);
+    }
     console.log(`key down: ${key}`);
   }
 
