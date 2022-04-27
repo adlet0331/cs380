@@ -396,7 +396,7 @@ export default class Assignment2 extends cs380.BaseApp {
       currentAnimationInfo = this.animationInfoDict["default"]
       let ratioList = currentAnimationInfo["keyFrameRatioList"];
       let currentKeyframeData = currentAnimationInfo["dataList"][0];
-      let currentMoveRatio = 0.5
+      let currentMoveRatio = (timePassed - waitTime - animationTime) / returnTime
       this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
       this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
