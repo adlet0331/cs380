@@ -5,6 +5,8 @@ import * as cs380 from "../cs380/cs380.js";
 
 import { SimpleShader } from "../simple_shader.js";
 
+import { Transform } from "../cs380/transform.js";
+
 export default class Assignment2 extends cs380.BaseApp {
   async initialize() {
     // Basic setup for camera
@@ -92,7 +94,7 @@ export default class Assignment2 extends cs380.BaseApp {
       object.uniforms.mainColor = vec3.create();
       cs380.utils.hexToRGB(object.uniforms.mainColor, color);
       if (parent != null){
-        object.transform.setParent(parent.transform);
+        object.transform.setParent(parent);
       }
       this.objectList.push(object);
       return object
@@ -131,62 +133,77 @@ export default class Assignment2 extends cs380.BaseApp {
     const downervect = -7.5
     this.bodyCube = generateMesh(bodyCubeMesh, this.clothcolor, 2, null);
     vec3.set(this.bodyCube.transform.localPosition, 0, downervect, 0);
-    this.bodyDownCube = generateMesh(bodyDownCubeMesh, this.pantcolor, 2, this.bodyCube)
+    this.bodyDownCube = generateMesh(bodyDownCubeMesh, this.pantcolor, 2, this.bodyCube.transform);
     vec3.set(this.bodyDownCube.transform.localPosition, 0, -3, 0);
     
     // Head
-    this.headCube = generateMesh(headCubeMesh, this.apricot, 1, this.bodyCube);
-    vec3.set(this.headCube.transform.localPosition, 0, 4, 0);
-    this.headHair = generateMesh(headHairMesh, this.haircolor, 1, this.headCube);
+    this.headjoint = new Transform();
+    this.headjoint.setParent(this.bodyCube.transform);
+    vec3.set(this.headjoint.localPosition, 0, 2.5, 0);
+    this.headCube = generateMesh(headCubeMesh, this.apricot, 1, this.headjoint);
+    vec3.set(this.headCube.transform.localPosition, 0, 1.5, 0);
+    this.headHair = generateMesh(headHairMesh, this.haircolor, 1, this.headCube.transform);
     vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
-    this.headfrontleftHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube);
+    this.headfrontleftHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube.transform);
     setPixelPos(this.headfrontleftHair, -1.75, 1.25, 2.05);
-    this.headfrontrightHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube);
+    this.headfrontrightHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube.transform);
     setPixelPos(this.headfrontrightHair, 1.75, 1.25, 2.05);
-    this.headleftEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube);
+    this.headleftEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube.transform);
     setPixelPos(this.headleftEye, -0.75, 0.25, 2.05);
-    this.headrightEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube);
+    this.headrightEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube.transform);
     setPixelPos(this.headrightEye, 0.75, 0.25, 2.05);
-    this.headWhiteleftEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube);
+    this.headWhiteleftEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube.transform);
     setPixelPos(this.headWhiteleftEye, -1.25, 0.25, 2.05);
-    this.headrightWhiteEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube);
+    this.headrightWhiteEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube.transform);
     setPixelPos(this.headrightWhiteEye, 1.25, 0.25, 2.05);
-    this.uppermustache1 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube);
+    this.uppermustache1 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube.transform);
     setPixelPos(this.uppermustache1, -0.25, -0.25, 2.05);
-    this.uppermustache2 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube);
+    this.uppermustache2 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube.transform);
     setPixelPos(this.uppermustache2, 0.25, -0.25, 2.05);
-    this.downmustache1 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache1 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache1, -0.75, -0.75, 2.05);
-    this.downmustache2 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache2 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache2, -0.75, -1.25, 2.05);
-    this.downmustache3 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache3 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache3, -0.25, -1.25, 2.05);
-    this.downmustache4 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache4 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache4, 0.25, -1.25, 2.05);
-    this.downmustache5 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache5 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache5, 0.75, -1.25, 2.05);
-    this.downmustache6 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube);
+    this.downmustache6 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache6, 0.75, -0.75, 2.05);
     // Head end
 
     // Right Arm
-    this.rightArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 3, this.bodyCube);
-    vec3.set(this.rightArmClothCube.transform.localPosition, 3, 1.5, 0);
-    this.rigthUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.rightArmClothCube);
+    this.rightArmjoint = new Transform();
+    this.rightArmjoint.setParent(this.bodyCube.transform);
+    vec3.set(this.rightArmjoint.localPosition, 3, 2.5, 0);
+    this.rightArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 3, this.rightArmjoint);
+    vec3.set(this.rightArmClothCube.transform.localPosition, 0, -1, 0);
+    this.rigthUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.rightArmClothCube.transform);
     vec3.set(this.rigthUpArmCube.transform.localPosition, 0, -1.5, 0);
-    this.rigthDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.rigthUpArmCube);
-    vec3.set(this.rigthDownArmCube.transform.localPosition, 0, -2, 0);
+    this.rightArmMidjoint = new Transform();
+    this.rightArmMidjoint.setParent(this.rigthUpArmCube.transform);
+    vec3.set(this.rightArmMidjoint.localPosition, 0, -0.3, 0);
+    this.rigthDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.rightArmMidjoint);
+    vec3.set(this.rigthDownArmCube.transform.localPosition, 0, -1.5, 0);
 
     // Left Arm
 
     // Right Leg
-    this.rightUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 5, this.bodyCube);
-    vec3.set(this.rightUpLegCube.transform.localPosition, 1, -4.5, 0);
-    this.rightMidLegCube = generateMesh(legmidCubeMesh, this.pantshadowcolor, 5, this.rightUpLegCube);
+    this.rightLegjoint = new Transform();
+    this.rightLegjoint.setParent(this.bodyCube.transform);
+    vec3.set(this.rightLegjoint.localPosition, 1, -3.2, 0);
+    this.rightUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 5, this.rightLegjoint);
+    vec3.set(this.rightUpLegCube.transform.localPosition, 0, -1, 0);
+    this.rightMidLegCube = generateMesh(legmidCubeMesh, this.pantshadowcolor, 5, this.rightUpLegCube.transform);
     vec3.set(this.rightMidLegCube.transform.localPosition, 0, -1.25, 0);
-    this.rightDownLegCube = generateMesh(legdownCubeMesh, this.pantcolor, 5, this.rightMidLegCube);
-    vec3.set(this.rightDownLegCube.transform.localPosition, 0, -1, 0);
-    this.rightDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 5, this.rightDownLegCube);
+    this.rightLegMidjoint = new Transform();
+    this.rightLegMidjoint.setParent(this.rightMidLegCube.transform);
+    vec3.set(this.rightLegMidjoint.localPosition, 0, -0.4, 0);
+    this.rightDownLegCube = generateMesh(legdownCubeMesh, this.pantcolor, 5, this.rightLegMidjoint);
+    vec3.set(this.rightDownLegCube.transform.localPosition, 0, -0.5, 0);
+    this.rightDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 5, this.rightDownLegCube.transform);
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
     // Left Leg
@@ -314,6 +331,7 @@ export default class Assignment2 extends cs380.BaseApp {
       obj.render(this.camera)
     }
     // Animation
-
+    //quat.rotateX(this.rightLegMidjoint.localRotation, this.rightLegMidjoint.localRotation, dt);
+    //console.log(this.headjoint.localRotation);
   }
 }

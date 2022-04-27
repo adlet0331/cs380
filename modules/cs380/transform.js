@@ -36,7 +36,7 @@ export class Transform {
     );
 
     // TODO: Implement hierarchical frames
-    if (this.parent) {
+    if (this.parent != null) {
       let parentTRS = this.parent.worldMatrix
       let scale = vec3.create()
       let parentTRSelseScale = mat4.create()
