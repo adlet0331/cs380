@@ -115,7 +115,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const armupCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
     const armdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 3, 2));
     const legupCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 2, 2));
-    const legmidCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 0.5, 2));
+    const legmidCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(1.9, 2, 1.9));
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
@@ -252,6 +252,12 @@ export default class Assignment2 extends cs380.BaseApp {
       return quat.fromValues(transf[0], transf[1], transf[2], transf[3]);
     }
 
+    // Input per Animation Dictionary
+    this.status2BindedList = []
+    this.keyBindNum = 2
+    this.status2BindedList["sit"] = ["s"]
+    this.status2BindedList["walk"] = ["ArrowUp", "ArrowLeft", "ArrowRight", "ArrowBack"]
+
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
     this.currentStatusKey = "default"
@@ -312,22 +318,59 @@ export default class Assignment2 extends cs380.BaseApp {
     createAnimation("default", defaultData, 1, 1, 1, defaultRatioList);
 
     // Walk
+    let walkData = [];
+    let walkKeyframe1 = [];
+    walkKeyframe1["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe1["bodyR"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe1["head"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe1["armR1"] = new quat.fromValues(hPi / 3, 0, 0, 1);
+    walkKeyframe1["armR2"] = new quat.fromValues(- hPi / 6, 0, 0, 1);
+    walkKeyframe1["legR1"] = new quat.fromValues(- hPi  / 3, 0, 0, 1);
+    walkKeyframe1["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
+    walkData.push(walkKeyframe1);
+    let walkKeyframe2 = [];
+    walkKeyframe2["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe2["bodyR"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe2["head"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe2["armR1"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe2["armR2"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe2["legR1"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe2["legR2"] = new quat.fromValues(0, 0, 0, 1);
+    walkData.push(walkKeyframe2);
+    let walkKeyframe3 = [];
+    walkKeyframe3["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe3["bodyR"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe3["head"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe3["armR1"] = new quat.fromValues(- hPi / 3, 0, 0, 1);
+    walkKeyframe3["armR2"] = new quat.fromValues(- hPi / 6, 0, 0, 1);
+    walkKeyframe3["legR1"] = new quat.fromValues(hPi / 3, 0, 0, 1);
+    walkKeyframe3["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
+    walkData.push(walkKeyframe3);
+    let walkKeyframe4 = [];
+    walkKeyframe4["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe4["bodyR"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe4["head"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe4["armR1"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe4["armR2"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe4["legR1"] = new quat.fromValues(0, 0, 0, 1);
+    walkKeyframe4["legR2"] = new quat.fromValues(0, 0, 0, 1);
+    walkData.push(walkKeyframe4);
+    let walkFrameList = [0.25, 0.25, 0.25, 0.25];
+    createAnimation("walk", walkData, 1, 0, 0, walkFrameList);
 
     // Sit
     let sitData = [];
     let sitKeyframe1 = [];
     sitKeyframe1["bodyT"] = new vec3.fromValues(0, downervect, 0);
-    sitKeyframe1["bodyR"] = new quat.fromValues(hPi / 6, 0, 0, 1);
-    sitKeyframe1["head"] = new quat.fromValues(- hPi / 6, 0, 0, 1);
+    sitKeyframe1["bodyR"] = new quat.fromValues(hPi / 3, 0, 0, 1);
+    sitKeyframe1["head"] = new quat.fromValues(- hPi / 3, 0, 0, 1);
     sitKeyframe1["armR1"] = new quat.fromValues(0, 0, 0, 1);
     sitKeyframe1["armR2"] = new quat.fromValues(0, 0, 0, 1);
-    sitKeyframe1["legR1"] = new quat.fromValues(- hPi / 3, 0, 0, 1);
-    sitKeyframe1["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
+    sitKeyframe1["legR1"] = new quat.fromValues(- hPi * 2 / 3, 0, 0, 1);
+    sitKeyframe1["legR2"] = new quat.fromValues(hPi / 3, 0, 0, 1);
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
-    createAnimation("sit", sitData, 0.1, 0, 0.4, sitFrameList);
-
-    console.log(this.animationInfoDict["sit"]);
+    createAnimation("sit", sitData, 2, 0, 0.5, sitFrameList);
 
   }
 
@@ -401,16 +444,19 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     // Return to Default state
     if (timePassed > animationTime + waitTime){
+      // is Pressing, keep 
       if(this.isPressing){
-        this.pressingTime = timePassed - animationTime + waitTime;
+        this.pressingTime += timePassed - animationTime + waitTime;
         timePassed = timePassed - animationTime - waitTime;
         return;
       }
       // Now Play KeyFrame Animation
       currentAnimationInfo = this.animationInfoDict["default"]
-      let ratioList = currentAnimationInfo["keyFrameRatioList"];
       let currentKeyframeData = currentAnimationInfo["dataList"][0];
       let currentMoveRatio = (timePassed - waitTime - animationTime) / returnTime
+      if (currentMoveRatio > 0.8){
+        currentMoveRatio = 1
+      }
       this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
       this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
@@ -424,16 +470,21 @@ export default class Assignment2 extends cs380.BaseApp {
     let idx = 0;
     let ratioList = currentAnimationInfo["keyFrameRatioList"];
     let accumulatedRatio = 0;
+    let currentRatio = 0;
     for (let i = 0; i< currentAnimationInfo["num"]; i++){
-      let currentRatio = ratioList[i];
+      currentRatio = ratioList[i];
       if (timePassed >= accumulatedRatio * animationTime && timePassed <= animationTime * (accumulatedRatio + currentRatio)){
         idx = i;
         break;
       }
+      accumulatedRatio += currentRatio
     }
     // Now Play KeyFrame Animation
     let currentKeyframeData = currentAnimationInfo["dataList"][idx];
-    let currentMoveRatio = (timePassed - accumulatedRatio * animationTime) / (animationTime)
+    let currentMoveRatio = (timePassed - accumulatedRatio * animationTime) / (animationTime * currentRatio)
+    if (currentMoveRatio > 0.8){
+      currentMoveRatio = 1
+    }
     this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
     this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
@@ -441,14 +492,21 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
     this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
     this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
+    console.log(this.bodyCube.transform.localRotation)
+    console.log("ASDFASDf")
   }
 
   onKeyDown(key) {
-    if (key == "s"){
-      console.log("Sit");
-      this.setAnimationStatus(2);
+    for(let i = 1; i <= this.keyBindNum; i++){
+      let mappedList = this.status2BindedList[this.animationStatusList[i]];
+      for(let j = 0; j < mappedList.length; j++){
+        if(key == mappedList[j]){
+          this.setAnimationStatus(i);
+          console.log(`key down: ${key}`);
+          return;
+        }
+      }
     }
-    console.log(`key down: ${key}`);
   }
 
   onKeyUp(key) {
