@@ -37,12 +37,12 @@ export default class Assignment2 extends cs380.BaseApp {
     this.shoescolor = "#111111"
 
     // SimpleOrbitControl
-    const orbitControlCenter = vec3.fromValues(0, 0, 0);
-    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
-      this.camera,
-      orbitControlCenter
-    );
-    this.thingsToClear.push(this.simpleOrbitControl);
+    // const orbitControlCenter = vec3.fromValues(0, 0, 0);
+    // this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+    //   this.camera,
+    //   orbitControlCenter
+    // );
+    // this.thingsToClear.push(this.simpleOrbitControl);
 
     // Mesh & Shader
     const simpleShader = await cs380.buildShader(SimpleShader);
@@ -106,9 +106,10 @@ export default class Assignment2 extends cs380.BaseApp {
     }
 
     // Initialize Object Mesh
+    const arcBallmMesh = cs380.Mesh.fromData(cs380.primitives.generateSphere(7, 4));
     const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
     const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
-    const unitpixelmesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(0.5, 0.5));
+    const unitpixelMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(0.5, 0.5));
     const bodyCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 5, 2));
     const bodyDownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 2));
     const armClothCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 2, 2));
@@ -121,7 +122,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
-    this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelmesh, bodyCubeMesh, bodyDownCubeMesh);
+    this.thingsToClear.push(arcBallmMesh, headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
     this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh);
 
@@ -130,6 +131,11 @@ export default class Assignment2 extends cs380.BaseApp {
     this.pickingBuffer = new cs380.PickingBuffer();
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
+
+    // Arcball
+    this.arcBall = generateMesh(arcBallmMesh, "#880808", 10, null);
+    vec3.set(this.arcBall.transform.localPosition, 15, -12, 0);
+    vec3.set(this.arcBall.transform.localScale, 4, 4, 4);
 
     // Body
     const downervect = -7.5
@@ -146,33 +152,33 @@ export default class Assignment2 extends cs380.BaseApp {
     vec3.set(this.headCube.transform.localPosition, 0, 1.5, 0);
     this.headHair = generateMesh(headHairMesh, this.haircolor, 1, this.headCube.transform);
     vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
-    this.headfrontleftHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube.transform);
+    this.headfrontleftHair = generateMesh(unitpixelMesh, this.haircolor, 1, this.headCube.transform);
     setPixelPos(this.headfrontleftHair, -1.75, 1.25, 2.05);
-    this.headfrontrightHair = generateMesh(unitpixelmesh, this.haircolor, 1, this.headCube.transform);
+    this.headfrontrightHair = generateMesh(unitpixelMesh, this.haircolor, 1, this.headCube.transform);
     setPixelPos(this.headfrontrightHair, 1.75, 1.25, 2.05);
-    this.headleftEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube.transform);
+    this.headleftEye = generateMesh(unitpixelMesh, this.purple, 1, this.headCube.transform);
     setPixelPos(this.headleftEye, -0.75, 0.25, 2.05);
-    this.headrightEye = generateMesh(unitpixelmesh, this.purple, 1, this.headCube.transform);
+    this.headrightEye = generateMesh(unitpixelMesh, this.purple, 1, this.headCube.transform);
     setPixelPos(this.headrightEye, 0.75, 0.25, 2.05);
-    this.headWhiteleftEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube.transform);
+    this.headWhiteleftEye = generateMesh(unitpixelMesh, this.white, 1, this.headCube.transform);
     setPixelPos(this.headWhiteleftEye, -1.25, 0.25, 2.05);
-    this.headrightWhiteEye = generateMesh(unitpixelmesh, this.white, 1, this.headCube.transform);
+    this.headrightWhiteEye = generateMesh(unitpixelMesh, this.white, 1, this.headCube.transform);
     setPixelPos(this.headrightWhiteEye, 1.25, 0.25, 2.05);
-    this.uppermustache1 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube.transform);
+    this.uppermustache1 = generateMesh(unitpixelMesh, this.upmustachecolor, 1, this.headCube.transform);
     setPixelPos(this.uppermustache1, -0.25, -0.25, 2.05);
-    this.uppermustache2 = generateMesh(unitpixelmesh, this.upmustachecolor, 1, this.headCube.transform);
+    this.uppermustache2 = generateMesh(unitpixelMesh, this.upmustachecolor, 1, this.headCube.transform);
     setPixelPos(this.uppermustache2, 0.25, -0.25, 2.05);
-    this.downmustache1 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache1 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache1, -0.75, -0.75, 2.05);
-    this.downmustache2 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache2 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache2, -0.75, -1.25, 2.05);
-    this.downmustache3 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache3 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache3, -0.25, -1.25, 2.05);
-    this.downmustache4 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache4 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache4, 0.25, -1.25, 2.05);
-    this.downmustache5 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache5 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache5, 0.75, -1.25, 2.05);
-    this.downmustache6 = generateMesh(unitpixelmesh, this.mustachecolor, 1, this.headCube.transform);
+    this.downmustache6 = generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform);
     setPixelPos(this.downmustache6, 0.75, -0.75, 2.05);
     // Head end
 
@@ -233,6 +239,9 @@ export default class Assignment2 extends cs380.BaseApp {
     document.addEventListener("keydown", this.handleKeyDown);
     document.addEventListener("keyup", this.handleKeyUp);
     gl.canvas.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    gl.canvas.addEventListener("wheel", this.handleWheel);
 
     document.getElementById("settings").innerHTML = `
       <h3>Basic requirements</h3>
@@ -361,7 +370,7 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe4["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe4);
-    let walkFrameList = [0.3, 0.2, 0.3, 0.2];
+    let walkFrameList = [0.33, 0.17, 0.33, 0.17];
     createAnimation("walk", walkData, 0.7, 0, 0, walkFrameList);
 
     // Sit
@@ -533,10 +542,35 @@ export default class Assignment2 extends cs380.BaseApp {
     const x = e.clientX - left;
     const y = bottom - e.clientY;
 
+    this.prevMouseX = mouseX;
+    this.prevMouseY = mouseY;
+    this.currMouseX = mouseX;
+    this.currMouseY = mouseY;
+
     // Object with this index has just picked
     const index = this.pickingBuffer.pick(x, y);
 
+    console.log(x + "  " + y)
+
     console.log(`onMouseDown() got index ${index}`);
+  }
+
+  onMouseMove() {
+    const canvas = gl.canvas;
+    return (e) => {
+      if (!this.pressed) return;
+      const rect = canvas.getBoundingClientRect();
+      this.prevMouseX = this.currMouseX;
+      this.prevMouseY = this.currMouseY;
+      this.currMouseX = e.clientX - rect.left;
+      this.currMouseY = rect.bottom - e.clientY;
+    };
+  }
+
+  onMouseUp() {
+    return (e) => {
+      this.Mousepressed = false;
+    };
   }
 
   finalize() {
@@ -548,7 +582,7 @@ export default class Assignment2 extends cs380.BaseApp {
 
   update(elapsed, dt) {
     // Updates before rendering here
-    this.simpleOrbitControl.update(dt);
+    //this.simpleOrbitControl.update(dt);
 
     // Render picking information first
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingBuffer.fbo);
