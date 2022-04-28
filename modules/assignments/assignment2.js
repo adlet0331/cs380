@@ -259,6 +259,8 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationKeyframeIndex = 0
     this.isAnimationRunning = false
     this.firstInput = false
+    this.isPressing = false
+    this.pressingTime = 0
     this.startTransformationArchieve;
 
     // Animation infos
@@ -323,7 +325,7 @@ export default class Assignment2 extends cs380.BaseApp {
     sitKeyframe1["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
-    createAnimation("sit", sitData, 0.5, 0.5, 1, sitFrameList);
+    createAnimation("sit", sitData, 0.1, 0, 0.4, sitFrameList);
 
     console.log(this.animationInfoDict["sit"]);
 
@@ -346,6 +348,8 @@ export default class Assignment2 extends cs380.BaseApp {
     this.currentStatusKey = this.animationStatusList[idx];
     this.isAnimationRunning = true
     this.firstInput = true
+    this.isPressing = true
+    this.pressingTime = 0;
   }
 
   animationMove(fromvect, tovect , ratio){
@@ -387,7 +391,7 @@ export default class Assignment2 extends cs380.BaseApp {
       console.log("Error! " + currentAnimationInfo + " DataList Length is Different!");
     }
 
-    let timePassed = elapsed - this.animationStartTime;
+    let timePassed = elapsed - this.animationStartTime - this.pressingTime;
     if (timePassed > totalTime){
       this.isAnimationRunning = false;
       return;
@@ -397,6 +401,11 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     // Return to Default state
     if (timePassed > animationTime + waitTime){
+      if(this.isPressing){
+        this.pressingTime = timePassed - animationTime + waitTime;
+        timePassed = timePassed - animationTime - waitTime;
+        return;
+      }
       // Now Play KeyFrame Animation
       currentAnimationInfo = this.animationInfoDict["default"]
       let ratioList = currentAnimationInfo["keyFrameRatioList"];
@@ -435,7 +444,7 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   onKeyDown(key) {
-    if (key == "Shift"){
+    if (key == "s"){
       console.log("Sit");
       this.setAnimationStatus(2);
     }
@@ -443,6 +452,12 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   onKeyUp(key) {
+    if (key == "s"){
+      console.log("Sit up");
+      if (this.currentStatusKey == "sit"){
+        this.isPressing = false;
+      }
+    }
     console.log(`key Up: ${key}`);
   }
 
