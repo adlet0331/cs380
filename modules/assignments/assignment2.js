@@ -214,6 +214,10 @@ export default class Assignment2 extends cs380.BaseApp {
       if (e.repeat) return;
       this.onKeyDown(e.key);
     };
+    this.handleKeyUp = (e) => {
+      if (e.repeat) return;
+      this.onKeyUp(e.key);
+    }
     this.handleMouseDown = (e) => {
       // e.button = 0 if it is left mouse button
       if (e.button !== 0) return;
@@ -221,6 +225,7 @@ export default class Assignment2 extends cs380.BaseApp {
     };
 
     document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keyup", this.handleKeyUp);
     gl.canvas.addEventListener("mousedown", this.handleMouseDown);
 
     document.getElementById("settings").innerHTML = `
@@ -318,7 +323,7 @@ export default class Assignment2 extends cs380.BaseApp {
     sitKeyframe1["legR2"] = new quat.fromValues(hPi / 6, 0, 0, 1);
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
-    createAnimation("sit", sitData, 1, 2, 1, sitFrameList);
+    createAnimation("sit", sitData, 0.5, 0.5, 1, sitFrameList);
 
     console.log(this.animationInfoDict["sit"]);
 
@@ -435,6 +440,10 @@ export default class Assignment2 extends cs380.BaseApp {
       this.setAnimationStatus(2);
     }
     console.log(`key down: ${key}`);
+  }
+
+  onKeyUp(key) {
+    console.log(`key Up: ${key}`);
   }
 
   onMouseDown(e) {
