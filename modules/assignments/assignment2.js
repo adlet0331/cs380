@@ -37,12 +37,12 @@ export default class Assignment2 extends cs380.BaseApp {
     this.shoescolor = "#111111"
 
     // SimpleOrbitControl
-    // const orbitControlCenter = vec3.fromValues(0, 0, 0);
-    // this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
-    //   this.camera,
-    //   orbitControlCenter
-    // );
-    // this.thingsToClear.push(this.simpleOrbitControl);
+    const orbitControlCenter = vec3.fromValues(0, 0, 0);
+    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+      this.camera,
+      orbitControlCenter
+    );
+    this.thingsToClear.push(this.simpleOrbitControl);
 
     // Mesh & Shader
     const simpleShader = await cs380.buildShader(SimpleShader);
@@ -106,7 +106,6 @@ export default class Assignment2 extends cs380.BaseApp {
     }
 
     // Initialize Object Mesh
-    const arcBallmMesh = cs380.Mesh.fromData(cs380.primitives.generateSphere(7, 4));
     const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
     const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
     const unitpixelMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(0.5, 0.5));
@@ -122,7 +121,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
-    this.thingsToClear.push(arcBallmMesh, headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
+    this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
     this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh);
 
@@ -132,15 +131,13 @@ export default class Assignment2 extends cs380.BaseApp {
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
 
-    // Arcball
-    this.arcBall = generateMesh(arcBallmMesh, "#880808", 10, null);
-    vec3.set(this.arcBall.transform.localPosition, 15, -12, 0);
-    vec3.set(this.arcBall.transform.localScale, 4, 4, 4);
-
     // Body
     const downervect = -7.5
-    this.bodyCube = generateMesh(bodyCubeMesh, this.clothcolor, 2, null);
-    vec3.set(this.bodyCube.transform.localPosition, 0, downervect, 0);
+    this.bodyjoint = new Transform();
+    this.bodyjoint.setParent(null);
+    vec3.set(this.bodyjoint.localPosition, 0, downervect, 0);
+    this.bodyCube = generateMesh(bodyCubeMesh, this.clothcolor, 2, this.bodyjoint);
+    vec3.set(this.bodyCube.transform.localPosition, 0, 0, 0);
     this.bodyDownCube = generateMesh(bodyDownCubeMesh, this.pantcolor, 2, this.bodyCube.transform);
     vec3.set(this.bodyDownCube.transform.localPosition, 0, -3, 0);
     
@@ -235,6 +232,15 @@ export default class Assignment2 extends cs380.BaseApp {
       if (e.button !== 0) return;
       this.onMouseDown(e);
     };
+    this.handleMouseMove = (e) => {
+      if (e.button !== 0) return;
+      if (!this.Mousepressed) return;
+      this.onMouseMove(e);
+    }
+    this.handleMouseUp = (e) => {
+      if (e.button !== 0) return;
+      this.onMouseUp(e);
+    }
 
     document.addEventListener("keydown", this.handleKeyDown);
     document.addEventListener("keyup", this.handleKeyUp);
@@ -269,9 +275,34 @@ export default class Assignment2 extends cs380.BaseApp {
 
     // Input per Animation Dictionary
     this.status2BindedList = []
-    this.keyBindNum = 2
+    this.keyBindNum = 3
+    this.status2BindedList["default"] = ["d"]
     this.status2BindedList["sit"] = ["s"]
     this.status2BindedList["walk"] = ["ArrowUp", "ArrowLeft", "ArrowRight", "ArrowDown"]
+
+    // Implement ArcBall per Picking Objects
+
+    this.prevMouseX = 0;
+    this.prevMouseY = 0;
+    this.currMouseX = 0;
+    this.currMouseY = 0;
+
+    this.Mousepressed = false;
+    this.arcBallDir = new vec3.create();
+    this.arcBallUp = vec3.fromValues(0, 1, 0);
+
+    this.arcBallRadius = 0
+    this.arcBallAltitude = 0
+    this.arcBallAzimuth = 0
+
+    // arcBallDict
+    this.SelectedObjIdx = 0
+    this.SelectedObject = this.bodyjoint;
+
+    this.Idx2ArcTransform = []
+    this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.headjoint);
+    this.Idx2ArcTransform.push(this.bodyjoint);
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
@@ -330,12 +361,12 @@ export default class Assignment2 extends cs380.BaseApp {
     defaultKeyframe1["timeRatio"] = 1;
     defaultData.push(defaultKeyframe1);
     let defaultRatioList = [1]
-    createAnimation("default", defaultData, 1, 1, 1, defaultRatioList);
+    createAnimation("default", defaultData, 1, 1, 0, defaultRatioList);
 
     // Walk
     let walkData = [];
     let walkKeyframe1 = [];
-    walkKeyframe1["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
@@ -344,7 +375,7 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe1);
     let walkKeyframe2 = [];
-    walkKeyframe2["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -353,7 +384,7 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe2);
     let walkKeyframe3 = [];
-    walkKeyframe3["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe3["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
@@ -362,7 +393,7 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe3);
     let walkKeyframe4 = [];
-    walkKeyframe4["bodyT"] = new vec3.fromValues(0, downervect, 0);
+    walkKeyframe4["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -376,7 +407,7 @@ export default class Assignment2 extends cs380.BaseApp {
     // Sit
     let sitData = [];
     let sitKeyframe1 = [];
-    sitKeyframe1["bodyT"] = new vec3.fromValues(0, downervect - 3, 1);
+    sitKeyframe1["bodyT"] = new vec3.fromValues(0, - 3, 1);
     sitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitKeyframe1["head"] = quat.fromEuler(new quat.create(), -60, 0, 0);
     sitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -414,7 +445,6 @@ export default class Assignment2 extends cs380.BaseApp {
     let x = fromvect[0] + (tovect[0] -  fromvect[0]) * ratio;
     let y = fromvect[1] + (tovect[1] -  fromvect[1]) * ratio;
     let z = fromvect[2] + (tovect[2] -  fromvect[2]) * ratio;
-    console.log(x)
     
     vec3.set(fromvect, x, y, z);
   }
@@ -510,7 +540,7 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   onKeyDown(key) {
-    for(let i = 1; i <= this.keyBindNum; i++){
+    for(let i = 0; i < this.keyBindNum; i++){
       let mappedList = this.status2BindedList[this.animationStatusList[i]];
       for(let j = 0; j < mappedList.length; j++){
         if(key == mappedList[j]){
@@ -523,7 +553,7 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   onKeyUp(key) {
-    for(let i = 1; i <= this.keyBindNum; i++){
+    for(let i = 0; i < this.keyBindNum; i++){
       let mappedList = this.status2BindedList[this.animationStatusList[i]];
       for(let j = 0; j < mappedList.length; j++){
         if(key == mappedList[j]){
@@ -539,8 +569,8 @@ export default class Assignment2 extends cs380.BaseApp {
 
   onMouseDown(e) {
     const { left, bottom } = gl.canvas.getBoundingClientRect();
-    const x = e.clientX - left;
-    const y = bottom - e.clientY;
+    const mouseX = e.clientX - left;
+    const mouseY = bottom - e.clientY;
 
     this.prevMouseX = mouseX;
     this.prevMouseY = mouseY;
@@ -548,41 +578,95 @@ export default class Assignment2 extends cs380.BaseApp {
     this.currMouseY = mouseY;
 
     // Object with this index has just picked
-    const index = this.pickingBuffer.pick(x, y);
+    const index = this.pickingBuffer.pick(mouseX, mouseY);
 
-    console.log(x + "  " + y)
+    this.Mousepressed = true;
+    this.SelectedObjIdx = index;
+    this.SelectedObject = this.Idx2ArcTransform[index];
+
+    console.log(mouseX + "  " + mouseY)
 
     console.log(`onMouseDown() got index ${index}`);
   }
 
-  onMouseMove() {
+  onMouseMove(e) {
+    console.log("Move")
     const canvas = gl.canvas;
-    return (e) => {
-      if (!this.pressed) return;
-      const rect = canvas.getBoundingClientRect();
-      this.prevMouseX = this.currMouseX;
-      this.prevMouseY = this.currMouseY;
-      this.currMouseX = e.clientX - rect.left;
-      this.currMouseY = rect.bottom - e.clientY;
-    };
+    if (!this.Mousepressed) return;
+    const rect = canvas.getBoundingClientRect();
+    this.prevMouseX = this.currMouseX;
+    this.prevMouseY = this.currMouseY;
+    this.currMouseX = e.clientX - rect.left;
+    this.currMouseY = rect.bottom - e.clientY;
   }
 
-  onMouseUp() {
-    return (e) => {
-      this.Mousepressed = false;
-    };
+  onMouseUp(e) {
+    this.Mousepressed = false;
+  }
+
+  arcBallUpdate(dt, speed = 1e4 * 3, damping = 0.1) {
+    if (!this.Mousepressed){
+      return;
+    }
+
+    let deltaX = (this.currMouseX - this.prevMouseX) / gl.canvas.clientWidth;
+    let deltaY = (this.currMouseY - this.prevMouseY) / gl.canvas.clientHeight;
+    console.log(deltaX)
+    console.log(deltaY)
+    if (!this.pressed) {
+      const damp = Math.pow(damping, dt);
+      this.prevMouseX = damp * this.prevMouseX + (1 - damp) * this.currMouseX;
+      this.prevMouseY = damp * this.prevMouseY + (1 - damp) * this.currMouseY;
+    } else {
+      this.prevMouseX = this.currMouseX;
+      this.prevMouseY = this.currMouseY;
+    }
+
+    speed *= Math.PI / 180;
+    if (this.radius == 0) speed *= -1;
+    this.arcBallAltitude += deltaY * speed * dt;
+    this.arcBallAltitude = Math.max(0.0001, Math.min(this.arcBallAltitude, Math.PI - 0.0001));
+
+    this.arcBallAzimuth += deltaX * speed * dt;
+    while (this.arcBallAzimuth < -Math.PI) this.arcBallAzimuth += 2 * Math.PI;
+    while (this.arcBallAzimuth > Math.PI) this.arcBallAzimuth -= 2 * Math.PI;
+
+    const dir = this.arcBallDir;
+    const dirR = this.arcBallRadius == 0 ? 1 : this.arcBallRadius;
+    const pos = this.SelectedObject.localPosition;
+
+    const r = dirR * Math.sin(this.arcBallAltitude);
+    const y = dirR * Math.cos(this.arcBallAltitude);
+    const x = r * Math.cos(this.arcBallAzimuth);
+    const z = r * Math.sin(this.arcBallAzimuth);
+    console.log(`${x}, ${y}, ${z}`)
+
+    vec3.set(dir, x, y, z);
+    if (this.radius > 0) vec3.add(pos, this.SelectedObject.localPosition, dir);
+    else vec3.set(pos, ...this.SelectedObject.localPosition);
+
+    vec3.normalize(dir, dir);
+    vec3.negate(dir, dir);
+    this.SelectedObject.lookAt(dir, this.arcBallUp);
   }
 
   finalize() {
     // Finalize WebGL objects (mesh, shader, texture, ...)
     document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keyup", this.handleKeyUp);
     gl.canvas.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    gl.canvas.removeEventListener("wheel", this.handleWheel);
     this.thingsToClear.forEach((it) => it.finalize());
   }
 
   update(elapsed, dt) {
     // Updates before rendering here
-    //this.simpleOrbitControl.update(dt);
+    // if (!this.Mousepressed)
+      // this.simpleOrbitControl.update(dt);
+
+    this.arcBallUpdate(dt);
 
     // Render picking information first
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingBuffer.fbo);
@@ -617,5 +701,6 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     // Animation
     this.updateAnimation(elapsed);
+    //quat.rotateY(this.bodyjoint.localRotation, this.bodyjoint.localRotation, dt / 2);
   }
 }
