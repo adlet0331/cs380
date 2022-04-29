@@ -636,8 +636,8 @@ export default class Assignment2 extends cs380.BaseApp {
     const pos = this.SelectedObject.localPosition;
 
     const r = dirR * Math.sin(this.arcBallAltitude);
-    const y = dirR * Math.cos(this.arcBallAltitude);
-    const x = r * Math.cos(this.arcBallAzimuth);
+    const y = - dirR * Math.cos(this.arcBallAltitude);
+    const x = - r * Math.cos(this.arcBallAzimuth);
     const z = r * Math.sin(this.arcBallAzimuth);
     console.log(`${x}, ${y}, ${z}`)
 
