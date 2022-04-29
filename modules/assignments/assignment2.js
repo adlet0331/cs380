@@ -303,6 +303,10 @@ export default class Assignment2 extends cs380.BaseApp {
     this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.headjoint);
     this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.rightArmjoint);
+    this.Idx2ArcTransform.push(this.rightArmjoint);
+    this.Idx2ArcTransform.push(this.rightLegjoint);
+    this.Idx2ArcTransform.push(this.rightLegjoint);
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
@@ -477,7 +481,6 @@ export default class Assignment2 extends cs380.BaseApp {
     let timePassed = elapsed - this.animationStartTime - this.pressingTime;
     // is Pressing, keep walking
     if(this.isPressing && this.currentStatusKey == "walk" && timePassed >= animationTime + waitTime){
-      console.log("ASDFASDF")
       this.setAnimationStatus(1);
       return;
     }
@@ -583,10 +586,9 @@ export default class Assignment2 extends cs380.BaseApp {
     this.Mousepressed = true;
     this.SelectedObjIdx = index;
     this.SelectedObject = this.Idx2ArcTransform[index];
+    console.log(`Select Index: ${index - 1}`);
 
-    console.log(mouseX + "  " + mouseY)
-
-    console.log(`onMouseDown() got index ${index}`);
+    //console.log(`onMouseDown() got index ${index}`);
   }
 
   onMouseMove(e) {
@@ -611,8 +613,6 @@ export default class Assignment2 extends cs380.BaseApp {
 
     let deltaX = (this.currMouseX - this.prevMouseX) / gl.canvas.clientWidth;
     let deltaY = (this.currMouseY - this.prevMouseY) / gl.canvas.clientHeight;
-    console.log(deltaX)
-    console.log(deltaY)
     if (!this.pressed) {
       const damp = Math.pow(damping, dt);
       this.prevMouseX = damp * this.prevMouseX + (1 - damp) * this.currMouseX;
@@ -639,7 +639,6 @@ export default class Assignment2 extends cs380.BaseApp {
     const y = - dirR * Math.cos(this.arcBallAltitude);
     const x = - r * Math.cos(this.arcBallAzimuth);
     const z = r * Math.sin(this.arcBallAzimuth);
-    console.log(`${x}, ${y}, ${z}`)
 
     vec3.set(dir, x, y, z);
     if (this.radius > 0) vec3.add(pos, this.SelectedObject.localPosition, dir);
