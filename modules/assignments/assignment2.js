@@ -35,6 +35,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.pantcolor = "#030344"
     this.pantshadowcolor = "#030044"
     this.shoescolor = "#111111"
+    this.brown = "#964B00"
 
     // SimpleOrbitControl
     const orbitControlCenter = vec3.fromValues(0, 0, 0);
@@ -121,7 +122,9 @@ export default class Assignment2 extends cs380.BaseApp {
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
-    const thinCylinderMesh = cs380.Mesh.fromData(cs380.primitives.generateCylinder(5, 0.6, 20))
+    const thinCylinderMesh = cs380.Mesh.fromData(cs380.primitives.generateCylinder(5, 0.6, 30))
+    const weaponSphere = cs380.Mesh.fromData(cs380.primitives.generateSphere());
+    const weaponCone = cs380.Mesh.fromData(cs380.primitives.generateCone(5, 2, 5));
 
     this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
@@ -185,6 +188,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.leftArmjoint = new Transform();
     this.leftArmjoint.setParent(this.bodyCube.transform);
     vec3.set(this.leftArmjoint.localPosition, -3, 2.5, 0);
+    quat.rotateX(this.leftArmjoint.localRotation, this.leftArmjoint.localRotation, - Math.PI / 2);
     this.leftArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 3, this.leftArmjoint);
     vec3.set(this.leftArmClothCube.transform.localPosition, 0, -1, 0);
     this.leftUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.leftArmClothCube.transform);
@@ -196,7 +200,13 @@ export default class Assignment2 extends cs380.BaseApp {
     vec3.set(this.leftArmMidjoint.localPosition, 0, 0, 0);
     this.leftDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.leftArmMidjoint);
     vec3.set(this.leftDownArmCube.transform.localPosition, 0, -1, 0);
-    this.weaponCylinder = generateMesh(thinCylinderMesh, "#000000", 3, this.leftDownArmCube.transform);
+    
+    this.weaponCylinder = generateMesh(thinCylinderMesh, this.brown, 3, this.leftDownArmCube.transform);
+    vec3.set(this.weaponCylinder.transform.localPosition, 0, 0, -9)
+    this.weaponSphere = generateMesh(weaponSphere, this.brown, 3, this.weaponCylinder.transform)
+    vec3.set(this.weaponSphere.transform.localPosition, 0, 0, 0)
+    this.weaponCone = generateMesh(weaponCone, "#AAAAAA", 3, this.weaponCylinder.transform)
+    vec3.set(this.weaponCone.transform.localPosition, 0, 0, 27)
 
 
     // Right Arm
@@ -324,12 +334,12 @@ export default class Assignment2 extends cs380.BaseApp {
     this.currMouseY = 0;
 
     this.Mousepressed = false;
-    this.arcBallDir = new vec3.create();
+    this.arcBallDir = vec3.fromValues(0, 1, 0);
     this.arcBallUp = vec3.fromValues(0, 1, 0);
 
     this.arcBallRadius = 0
-    this.arcBallAltitude = 0
-    this.arcBallAzimuth = 0
+    this.arcBallAltitude = Math.PI / 2
+    this.arcBallAzimuth = Math.PI / 2
 
     // arcBallDict
     this.SelectedObjIdx = 0
@@ -338,7 +348,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = true;
 
     this.Idx2ArcTransform = []
-    this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.camera.transform);
     this.Idx2ArcTransform.push(this.headjoint);
     this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.leftArmjoint);
@@ -346,7 +356,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.Idx2ArcTransform.push(this.leftLegjoint);
     this.Idx2ArcTransform.push(this.rightLegjoint);
 
-    this.IdxSpeedList = [1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3]
+    this.IdxSpeedList = [1e3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3]
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
@@ -659,6 +669,11 @@ export default class Assignment2 extends cs380.BaseApp {
     // Object with this index has just picked
     const index = this.pickingBuffer.pick(mouseX, mouseY);
 
+    if (index != this.SelectedObjIdx){
+      this.arcBallAltitude = Math.PI / 2
+      this.arcBallAzimuth = Math.PI / 2
+    }
+
     this.Mousepressed = true;
     this.SelectedObjIdx = index;
     this.SelectedObject = this.Idx2ArcTransform[this.SelectedObjIdx];
@@ -682,7 +697,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = false;
   }
 
-  arcBallUpdate(dt, damping = 0.1) {
+  arcBallUpdate(dt, damping = 0.5) {
     if (!this.Mousepressed){
       return;
     }
