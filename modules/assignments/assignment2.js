@@ -13,7 +13,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 60);
+    vec3.set(this.camera.transform.localPosition, 0, 7.5, 60);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -137,10 +137,9 @@ export default class Assignment2 extends cs380.BaseApp {
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
 
     // Body
-    const downervect = -7.5
     this.bodyjoint = new Transform();
     this.bodyjoint.setParent(null);
-    vec3.set(this.bodyjoint.localPosition, 0, downervect, 0);
+    vec3.set(this.bodyjoint.localPosition, 0, 0, 0);
     this.bodyCube = generateMesh(bodyCubeMesh, this.clothcolor, 2, this.bodyjoint);
     vec3.set(this.bodyCube.transform.localPosition, 0, 0, 0);
     this.bodyDownCube = generateMesh(bodyDownCubeMesh, this.pantcolor, 2, this.bodyCube.transform);
@@ -311,22 +310,6 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.cullFace(gl.BACK);
     gl.frontFace(gl.CCW);
 
-    const vec3create = (transf) => {
-      return vec3.fromValues(transf[0], transf[1], transf[2]);      
-    }
-
-    const quatcreate = (transf) => {
-      return quat.fromValues(transf[0], transf[1], transf[2], transf[3]);
-    }
-
-    // Input per Animation Dictionary
-    this.status2BindedList = []
-    this.keyBindNum = 4
-    this.status2BindedList["default"] = ["d"]
-    this.status2BindedList["sit"] = ["s"]
-    this.status2BindedList["walk"] = ["w"]
-    this.status2BindedList["hit"] = ["a"]
-
     // Implement ArcBall per Picking Objects
 
     this.prevMouseX = 0;
@@ -349,7 +332,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = true;
 
     this.Idx2ArcTransform = []
-    this.Idx2ArcTransform.push(this.camera.transform);
+    this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.headjoint);
     this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.leftArmjoint);
@@ -370,39 +353,19 @@ export default class Assignment2 extends cs380.BaseApp {
     this.pressingTime = 0
     this.startTransformationArchieve;
 
+    // Custom Animation Input
+    this.CustomInput = false;
+
+    // Input per Animation Dictionary
+    this.status2BindedList = []
+    this.keyBindNum = 4
+    this.status2BindedList["default"] = ["d"]
+    this.status2BindedList["sit"] = ["s"]
+    this.status2BindedList["walk"] = ["w"]
+    this.status2BindedList["hit"] = ["a"]
+
     // Animation infos
     this.animationInfoDict = [];
-
-    const createAnimation = (keyString, animationData, totalT, waitT, retT, ratioList) => {
-      let dict = [];
-      dict["num"] = animationData.length;
-      console.log("Animation keyframe len: " + dict["num"]);
-      dict["animationTime"] = totalT;
-      dict["waitTime"] = waitT;
-      dict["returnTime"] = retT;
-      dict["keyFrameRatioList"] = ratioList;
-
-      let datalist = [];
-      for(let i = 0; i < animationData.length; i++){
-        let data = [];
-        data["cameraT"] = vec3create(animationData[i]["cameraT"]);
-        data["bodyT"] = vec3create(animationData[i]["bodyT"]);
-        data["bodyR"] = quatcreate(animationData[i]["bodyR"]);
-        data["head"] = quatcreate(animationData[i]["head"]);
-        data["armL1"] = quatcreate(animationData[i]["armL1"]);
-        data["armL2"] = quatcreate(animationData[i]["armL2"]);
-        data["armR1"] = quatcreate(animationData[i]["armR1"]);
-        data["armR2"] = quatcreate(animationData[i]["armR2"]);
-        data["legL1"] = quatcreate(animationData[i]["legL1"]);
-        data["legL2"] = quatcreate(animationData[i]["legL2"]);
-        data["legR1"] = quatcreate(animationData[i]["legR1"]);
-        data["legR2"] = quatcreate(animationData[i]["legR2"]);
-        datalist.push(data);
-      }
-
-      dict["dataList"] = datalist;
-      this.animationInfoDict[keyString] = dict;
-    }
 
     // Construct Animation
 
@@ -412,21 +375,21 @@ export default class Assignment2 extends cs380.BaseApp {
     let defaultData = [];
     let defaultKeyframe1 = [];
     defaultKeyframe1["cameraT"] = vec3.fromValues(0, 0, 60);
-    defaultKeyframe1["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
-    defaultKeyframe1["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
-    defaultKeyframe1["head"] = quatcreate(this.headjoint.localRotation);
-    defaultKeyframe1["armL1"] = quatcreate(this.leftArmjoint.localRotation);
-    defaultKeyframe1["armL2"] = quatcreate(this.leftArmMidjoint.localRotation);
-    defaultKeyframe1["armR1"] = quatcreate(this.rightArmjoint.localRotation);
-    defaultKeyframe1["armR2"] = quatcreate(this.rightArmMidjoint.localRotation);
-    defaultKeyframe1["legL1"] = quatcreate(this.leftLegjoint.localRotation);
-    defaultKeyframe1["legL2"] = quatcreate(this.leftLegMidjoint.localRotation);
-    defaultKeyframe1["legR1"] = quatcreate(this.rightLegjoint.localRotation);
-    defaultKeyframe1["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
+    defaultKeyframe1["bodyT"] = vec3.clone(this.bodyjoint.localPosition);
+    defaultKeyframe1["bodyR"] = quat.clone(this.bodyjoint.localRotation);
+    defaultKeyframe1["head"] = quat.clone(this.headjoint.localRotation);
+    defaultKeyframe1["armL1"] = quat.clone(this.leftArmjoint.localRotation);
+    defaultKeyframe1["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
+    defaultKeyframe1["armR1"] = quat.clone(this.rightArmjoint.localRotation);
+    defaultKeyframe1["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
+    defaultKeyframe1["legL1"] = quat.clone(this.leftLegjoint.localRotation);
+    defaultKeyframe1["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
+    defaultKeyframe1["legR1"] = quat.clone(this.rightLegjoint.localRotation);
+    defaultKeyframe1["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
     defaultKeyframe1["timeRatio"] = 1;
     defaultData.push(defaultKeyframe1);
     let defaultRatioList = [1]
-    createAnimation("default", defaultData, 1, 1, 0, defaultRatioList);
+    this.createAnimation("default", defaultData, 1, 1, 0, defaultRatioList);
 
     // Walk
     let walkData = [];
@@ -487,7 +450,7 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe4);
     let walkFrameList = [0.33, 0.17, 0.33, 0.17];
-    createAnimation("walk", walkData, 0.7, 0, 0, walkFrameList);
+    this.createAnimation("walk", walkData, 0.7, 0, 0, walkFrameList);
 
     // Sit
     let sitData = [];
@@ -506,7 +469,7 @@ export default class Assignment2 extends cs380.BaseApp {
     sitKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
-    createAnimation("sit", sitData, 0.1, 0, 0.5, sitFrameList);
+    this.createAnimation("sit", sitData, 0.1, 0, 0.5, sitFrameList);
 
     // Hit
     let hitData = [];
@@ -527,7 +490,7 @@ export default class Assignment2 extends cs380.BaseApp {
     hitData.push(hitKeyframe1);
 
     let hitKeyframe2 = [];
-    hitKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 65);
+    hitKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 70);
     hitKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 1);
     hitKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 10, 0, 0);
     hitKeyframe2["head"] = quat.fromEuler(new quat.create(), -10, -10, 0);
@@ -557,20 +520,8 @@ export default class Assignment2 extends cs380.BaseApp {
     hitData.push(hitKeyframe3);
 
     let hitFrameList = [0.4, 0.2, 0.4];
-    createAnimation("hit", hitData, 0.3, 0, 0.5, hitFrameList);
+    this.createAnimation("hit", hitData, 0.3, 0, 0.5, hitFrameList);
 
-  }
-
-  archieveCurrentStatus = () => {
-    let data = [];
-    data["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
-    data["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
-    data["head"] = quatcreate(this.headjoint.localRotation);
-    data["armR1"] = quatcreate(this.rightArmjoint.localRotation);
-    data["armR2"] = quatcreate(this.rightArmMidjoint.localRotation);
-    data["legR1"] = quatcreate(this.rightLegjoint.localRotation);
-    data["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
-    this.startTransformationArchieve = data;
   }
 
   setAnimationStatus(idx){
@@ -643,8 +594,8 @@ export default class Assignment2 extends cs380.BaseApp {
         currentMoveRatio = 1
       }
       this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
-      this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-      this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+      this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+      this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
       this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
       this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
@@ -676,8 +627,8 @@ export default class Assignment2 extends cs380.BaseApp {
       currentMoveRatio = 1
     }
     this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
-    this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-    this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+    this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+    this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
     this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
     this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
@@ -700,6 +651,9 @@ export default class Assignment2 extends cs380.BaseApp {
         }
       }
     }
+    if(key == "c"){
+      this.CustomInput = true;
+    }
   }
 
   onKeyUp(key) {
@@ -715,9 +669,75 @@ export default class Assignment2 extends cs380.BaseApp {
         }
       }
     }
+    if(key == "c"){
+      this.CustomInput = false;
+      return;
+    }
+    // Not bounded key
+    if (this.CustomInput){
+      this.keyBindNum += 1;
+      let animationName = "custom" + key
+      this.animationStatusList.push(animationName)
+      this.status2BindedList[animationName] = [key]
+      this.archieveCurrentFrame(animationName);
+      return;
+    }
+  }
+
+  createAnimation = (keyString, animationData, totalT, waitT, retT, ratioList) => {
+    let dict = [];
+    dict["num"] = animationData.length;
+    console.log("Animation keyframe len: " + dict["num"]);
+    dict["animationTime"] = totalT;
+    dict["waitTime"] = waitT;
+    dict["returnTime"] = retT;
+    dict["keyFrameRatioList"] = ratioList;
+
+    let datalist = [];
+    for(let i = 0; i < animationData.length; i++){
+      let data = [];
+      data["cameraT"] = vec3.clone(animationData[i]["cameraT"]);
+      data["bodyT"] = vec3.clone(animationData[i]["bodyT"]);
+      data["bodyR"] = quat.clone(animationData[i]["bodyR"]);
+      data["head"] = quat.clone(animationData[i]["head"]);
+      data["armL1"] = quat.clone(animationData[i]["armL1"]);
+      data["armL2"] = quat.clone(animationData[i]["armL2"]);
+      data["armR1"] = quat.clone(animationData[i]["armR1"]);
+      data["armR2"] = quat.clone(animationData[i]["armR2"]);
+      data["legL1"] = quat.clone(animationData[i]["legL1"]);
+      data["legL2"] = quat.clone(animationData[i]["legL2"]);
+      data["legR1"] = quat.clone(animationData[i]["legR1"]);
+      data["legR2"] = quat.clone(animationData[i]["legR2"]);
+      datalist.push(data);
+    }
+
+    dict["dataList"] = datalist;
+    this.animationInfoDict[keyString] = dict;
+  }
+
+  archieveCurrentFrame = (animStatus) => {
+    let customData = [];
+    let data = [];
+    data["cameraT"] = vec3.clone(this.camera.transform.localPosition);
+    data["bodyT"] = vec3.clone(this.bodyjoint.localPosition);
+    data["bodyR"] = quat.clone(this.bodyjoint.localRotation);
+    data["head"] = quat.clone(this.headjoint.localRotation);
+    data["armL1"] = quat.clone(this.leftArmjoint.localRotation);
+    data["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
+    data["armR1"] = quat.clone(this.rightArmjoint.localRotation);
+    data["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
+    data["legL1"] = quat.clone(this.leftLegjoint.localRotation);
+    data["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
+    data["legR1"] = quat.clone(this.rightLegjoint.localRotation);
+    data["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
+    customData.push(data);
+    let customFrameList = [1];
+    this.createAnimation(animStatus, customData, 1, 0.5, 0.5, customFrameList);
   }
 
   onMouseDown(e) {
+    console.log(this.animationStatusList)
+    console.log(this.status2BindedList)
     const { left, bottom } = gl.canvas.getBoundingClientRect();
     const mouseX = e.clientX - left;
     const mouseY = bottom - e.clientY;
@@ -758,7 +778,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = false;
   }
 
-  arcBallUpdate(dt, damping = 0.5) {
+  arcBallUpdate(dt, damping = 0.9) {
     if (!this.Mousepressed){
       return;
     }
