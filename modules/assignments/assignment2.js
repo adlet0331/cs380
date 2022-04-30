@@ -595,7 +595,7 @@ export default class Assignment2 extends cs380.BaseApp {
       }
       this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
       this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-      this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+      this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
       this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
       this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
@@ -628,7 +628,7 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
     this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-    this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+    this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
     this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
     this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
