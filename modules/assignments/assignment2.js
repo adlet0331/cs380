@@ -121,6 +121,8 @@ export default class Assignment2 extends cs380.BaseApp {
     const legdownCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1.5, 2));
     const shoesCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(2, 1, 2));
 
+    const thinCylinderMesh = cs380.Mesh.fromData(cs380.primitives.generateCylinder(5, 0.6, 20))
+
     this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
     this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh);
@@ -179,40 +181,74 @@ export default class Assignment2 extends cs380.BaseApp {
     setPixelPos(this.downmustache6, 0.75, -0.75, 2.05);
     // Head end
 
+    //Left Arm
+    this.leftArmjoint = new Transform();
+    this.leftArmjoint.setParent(this.bodyCube.transform);
+    vec3.set(this.leftArmjoint.localPosition, -3, 2.5, 0);
+    this.leftArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 3, this.leftArmjoint);
+    vec3.set(this.leftArmClothCube.transform.localPosition, 0, -1, 0);
+    this.leftUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.leftArmClothCube.transform);
+    vec3.set(this.leftUpArmCube.transform.localPosition, 0, -1.5, 0);
+    this.leftArmJointCube = generateMesh(armJointCubeMesh, this.apricot, 3, this.leftUpArmCube.transform);
+    vec3.set(this.leftArmJointCube.transform.localPosition, 0, -0.6, 0);
+    this.leftArmMidjoint = new Transform();
+    this.leftArmMidjoint.setParent(this.leftArmJointCube.transform);
+    vec3.set(this.leftArmMidjoint.localPosition, 0, 0, 0);
+    this.leftDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.leftArmMidjoint);
+    vec3.set(this.leftDownArmCube.transform.localPosition, 0, -1, 0);
+    this.weaponCylinder = generateMesh(thinCylinderMesh, "#000000", 3, this.leftDownArmCube.transform);
+
+
     // Right Arm
     this.rightArmjoint = new Transform();
     this.rightArmjoint.setParent(this.bodyCube.transform);
     vec3.set(this.rightArmjoint.localPosition, 3, 2.5, 0);
-    this.rightArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 3, this.rightArmjoint);
+    this.rightArmClothCube = generateMesh(armClothCubeMesh, this.clothcolor2, 4, this.rightArmjoint);
     vec3.set(this.rightArmClothCube.transform.localPosition, 0, -1, 0);
-    this.rigthUpArmCube = generateMesh(armupCubeMesh, this.apricot, 3, this.rightArmClothCube.transform);
-    vec3.set(this.rigthUpArmCube.transform.localPosition, 0, -1.5, 0);
-    this.rightArmJointCube = generateMesh(armJointCubeMesh, this.apricot, 3, this.rigthUpArmCube.transform);
+    this.rightUpArmCube = generateMesh(armupCubeMesh, this.apricot, 4, this.rightArmClothCube.transform);
+    vec3.set(this.rightUpArmCube.transform.localPosition, 0, -1.5, 0);
+    this.rightArmJointCube = generateMesh(armJointCubeMesh, this.apricot, 4, this.rightUpArmCube.transform);
     vec3.set(this.rightArmJointCube.transform.localPosition, 0, -0.6, 0);
     this.rightArmMidjoint = new Transform();
     this.rightArmMidjoint.setParent(this.rightArmJointCube.transform);
     vec3.set(this.rightArmMidjoint.localPosition, 0, 0, 0);
-    this.rigthDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 3, this.rightArmMidjoint);
-    vec3.set(this.rigthDownArmCube.transform.localPosition, 0, -1, 0);
+    this.rightDownArmCube = generateMesh(armdownCubeMesh, this.apricot, 4, this.rightArmMidjoint);
+    vec3.set(this.rightDownArmCube.transform.localPosition, 0, -1, 0);
 
-    // Left Arm
+    // Left Leg
+    this.leftLegUpjoint = generateMesh(legupJointCubeMesh, this.pantshadowcolor, 5, this.bodyCube.transform);
+    vec3.set(this.leftLegUpjoint.transform.localPosition, -1, -3.3, 0);
+    this.leftLegjoint = new Transform();
+    this.leftLegjoint.setParent(this.leftLegUpjoint.transform);
+    vec3.set(this.leftLegjoint.localPosition, 0, 0, 0);
+    this.leftUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 5, this.leftLegjoint);
+    vec3.set(this.leftUpLegCube.transform.localPosition, 0, -1, 0);
+    this.leftMidLegCube = generateMesh(legmidCubeMesh, this.pantshadowcolor, 5, this.leftUpLegCube.transform);
+    vec3.set(this.leftMidLegCube.transform.localPosition, 0, -1, 0);
+    this.leftLegMidjoint = new Transform();
+    this.leftLegMidjoint.setParent(this.leftMidLegCube.transform);
+    vec3.set(this.leftLegMidjoint.localPosition, 0, -0.2, 0);
+    this.leftDownLegCube = generateMesh(legdownCubeMesh, this.pantcolor, 5, this.leftLegMidjoint);
+    vec3.set(this.leftDownLegCube.transform.localPosition, 0, -0.4, 0);
+    this.leftDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 5, this.leftDownLegCube.transform);
+    vec3.set(this.leftDownShoeCube.transform.localPosition, 0, -1.24, 0);
 
     // Right Leg
-    this.rightLegUpjoint = generateMesh(legupJointCubeMesh, this.pantshadowcolor, 5, this.bodyCube.transform);
+    this.rightLegUpjoint = generateMesh(legupJointCubeMesh, this.pantshadowcolor, 6, this.bodyCube.transform);
     vec3.set(this.rightLegUpjoint.transform.localPosition, 1, -3.3, 0);
     this.rightLegjoint = new Transform();
     this.rightLegjoint.setParent(this.rightLegUpjoint.transform);
     vec3.set(this.rightLegjoint.localPosition, 0, 0, 0);
-    this.rightUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 5, this.rightLegjoint);
+    this.rightUpLegCube = generateMesh(legupCubeMesh, this.pantcolor, 6, this.rightLegjoint);
     vec3.set(this.rightUpLegCube.transform.localPosition, 0, -1, 0);
-    this.rightMidLegCube = generateMesh(legmidCubeMesh, this.pantshadowcolor, 5, this.rightUpLegCube.transform);
+    this.rightMidLegCube = generateMesh(legmidCubeMesh, this.pantshadowcolor, 6, this.rightUpLegCube.transform);
     vec3.set(this.rightMidLegCube.transform.localPosition, 0, -1, 0);
     this.rightLegMidjoint = new Transform();
     this.rightLegMidjoint.setParent(this.rightMidLegCube.transform);
     vec3.set(this.rightLegMidjoint.localPosition, 0, -0.2, 0);
-    this.rightDownLegCube = generateMesh(legdownCubeMesh, this.pantcolor, 5, this.rightLegMidjoint);
+    this.rightDownLegCube = generateMesh(legdownCubeMesh, this.pantcolor, 6, this.rightLegMidjoint);
     vec3.set(this.rightDownLegCube.transform.localPosition, 0, -0.5, 0);
-    this.rightDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 5, this.rightDownLegCube.transform);
+    this.rightDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 6, this.rightDownLegCube.transform);
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
     // Left Leg
@@ -299,14 +335,18 @@ export default class Assignment2 extends cs380.BaseApp {
     this.SelectedObjIdx = 0
     this.SelectedObject = this.bodyjoint;
 
+    this.firstClicking = true;
+
     this.Idx2ArcTransform = []
     this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.headjoint);
     this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.leftArmjoint);
     this.Idx2ArcTransform.push(this.rightArmjoint);
-    this.Idx2ArcTransform.push(this.rightArmjoint);
+    this.Idx2ArcTransform.push(this.leftLegjoint);
     this.Idx2ArcTransform.push(this.rightLegjoint);
-    this.Idx2ArcTransform.push(this.rightLegjoint);
+
+    this.IdxSpeedList = [1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3]
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
@@ -337,8 +377,12 @@ export default class Assignment2 extends cs380.BaseApp {
         data["bodyT"] = vec3create(animationData[i]["bodyT"]);
         data["bodyR"] = quatcreate(animationData[i]["bodyR"]);
         data["head"] = quatcreate(animationData[i]["head"]);
+        data["armL1"] = quatcreate(animationData[i]["armL1"]);
+        data["armL2"] = quatcreate(animationData[i]["armL2"]);
         data["armR1"] = quatcreate(animationData[i]["armR1"]);
         data["armR2"] = quatcreate(animationData[i]["armR2"]);
+        data["legL1"] = quatcreate(animationData[i]["legL1"]);
+        data["legL2"] = quatcreate(animationData[i]["legL2"]);
         data["legR1"] = quatcreate(animationData[i]["legR1"]);
         data["legR2"] = quatcreate(animationData[i]["legR2"]);
         datalist.push(data);
@@ -358,8 +402,12 @@ export default class Assignment2 extends cs380.BaseApp {
     defaultKeyframe1["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
     defaultKeyframe1["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
     defaultKeyframe1["head"] = quatcreate(this.headjoint.localRotation);
+    defaultKeyframe1["armL1"] = quatcreate(this.leftArmjoint.localRotation);
+    defaultKeyframe1["armL2"] = quatcreate(this.leftArmMidjoint.localRotation);
     defaultKeyframe1["armR1"] = quatcreate(this.rightArmjoint.localRotation);
     defaultKeyframe1["armR2"] = quatcreate(this.rightArmMidjoint.localRotation);
+    defaultKeyframe1["legL1"] = quatcreate(this.leftLegjoint.localRotation);
+    defaultKeyframe1["legL2"] = quatcreate(this.leftLegMidjoint.localRotation);
     defaultKeyframe1["legR1"] = quatcreate(this.rightLegjoint.localRotation);
     defaultKeyframe1["legR2"] = quatcreate(this.rightLegMidjoint.localRotation);
     defaultKeyframe1["timeRatio"] = 1;
@@ -373,8 +421,12 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
+    walkKeyframe1["armL2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
     walkKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
     walkKeyframe1["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe1["legL1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    walkKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -70, 0, 0);
     walkKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe1);
@@ -382,8 +434,12 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe2);
@@ -391,8 +447,12 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe3["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    walkKeyframe3["armL2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
     walkKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
-    walkKeyframe3["armR2"] = quat.fromEuler(new quat.create(), -30, 0, 0);
+    walkKeyframe3["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -70, 0, 0);
+    walkKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
     walkKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe3);
@@ -400,8 +460,12 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe4["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe4);
@@ -414,8 +478,12 @@ export default class Assignment2 extends cs380.BaseApp {
     sitKeyframe1["bodyT"] = new vec3.fromValues(0, - 3, 1);
     sitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitKeyframe1["head"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    sitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     sitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     sitKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
+    sitKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
     sitKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitData.push(sitKeyframe1);
@@ -508,8 +576,12 @@ export default class Assignment2 extends cs380.BaseApp {
       this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
       this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+      this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
+      this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
       this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
       this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+      this.animationRotate(this.leftLegjoint.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+      this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
       this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
       this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
       return;
@@ -536,8 +608,12 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
     this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+    this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
+    this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
     this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
     this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+    this.animationRotate(this.leftLegjoint.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+    this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
     this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
     this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
   }
@@ -548,11 +624,11 @@ export default class Assignment2 extends cs380.BaseApp {
       for(let j = 0; j < mappedList.length; j++){
         if(key == mappedList[j]){
           this.setAnimationStatus(i);
-          console.log(`key down: ${key}`);
           return;
         }
       }
     }
+    console.log(`key down: ${key}`);
   }
 
   onKeyUp(key) {
@@ -585,10 +661,8 @@ export default class Assignment2 extends cs380.BaseApp {
 
     this.Mousepressed = true;
     this.SelectedObjIdx = index;
-    this.SelectedObject = this.Idx2ArcTransform[index];
-    console.log(`Select Index: ${index - 1}`);
-
-    //console.log(`onMouseDown() got index ${index}`);
+    this.SelectedObject = this.Idx2ArcTransform[this.SelectedObjIdx];
+    console.log(`Select Index: ${index}`);
   }
 
   onMouseMove(e) {
@@ -604,12 +678,16 @@ export default class Assignment2 extends cs380.BaseApp {
 
   onMouseUp(e) {
     this.Mousepressed = false;
+
+    this.firstClicking = false;
   }
 
-  arcBallUpdate(dt, speed = 1e4 * 3, damping = 0.1) {
+  arcBallUpdate(dt, damping = 0.1) {
     if (!this.Mousepressed){
       return;
     }
+
+    let speed = this.IdxSpeedList[this.SelectedObjIdx]
 
     let deltaX = (this.currMouseX - this.prevMouseX) / gl.canvas.clientWidth;
     let deltaY = (this.currMouseY - this.prevMouseY) / gl.canvas.clientHeight;
