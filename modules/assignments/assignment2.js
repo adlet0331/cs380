@@ -321,10 +321,11 @@ export default class Assignment2 extends cs380.BaseApp {
 
     // Input per Animation Dictionary
     this.status2BindedList = []
-    this.keyBindNum = 3
+    this.keyBindNum = 4
     this.status2BindedList["default"] = ["d"]
     this.status2BindedList["sit"] = ["s"]
-    this.status2BindedList["walk"] = ["ArrowUp", "ArrowLeft", "ArrowRight", "ArrowDown"]
+    this.status2BindedList["walk"] = ["w"]
+    this.status2BindedList["hit"] = ["a"]
 
     // Implement ArcBall per Picking Objects
 
@@ -359,7 +360,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.IdxSpeedList = [1e3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3]
 
     // Animation Status Handling 
-    this.animationStatusList = ["default", "walk", "sit", "hit", "posing"]
+    this.animationStatusList = ["default", "walk", "sit", "hit"]
     this.currentStatusKey = "default"
     this.animationStartTime = 0
     this.animationKeyframeIndex = 0
@@ -384,6 +385,7 @@ export default class Assignment2 extends cs380.BaseApp {
       let datalist = [];
       for(let i = 0; i < animationData.length; i++){
         let data = [];
+        data["cameraT"] = vec3create(animationData[i]["cameraT"]);
         data["bodyT"] = vec3create(animationData[i]["bodyT"]);
         data["bodyR"] = quatcreate(animationData[i]["bodyR"]);
         data["head"] = quatcreate(animationData[i]["head"]);
@@ -409,6 +411,7 @@ export default class Assignment2 extends cs380.BaseApp {
     // Default
     let defaultData = [];
     let defaultKeyframe1 = [];
+    defaultKeyframe1["cameraT"] = vec3.fromValues(0, 0, 60);
     defaultKeyframe1["bodyT"] = vec3create(this.bodyCube.transform.localPosition);
     defaultKeyframe1["bodyR"] = quatcreate(this.bodyCube.transform.localRotation);
     defaultKeyframe1["head"] = quatcreate(this.headjoint.localRotation);
@@ -428,11 +431,12 @@ export default class Assignment2 extends cs380.BaseApp {
     // Walk
     let walkData = [];
     let walkKeyframe1 = [];
+    walkKeyframe1["cameraT"] = new vec3.fromValues(0.5, 1, 60);
     walkKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
-    walkKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
-    walkKeyframe1["armL2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe1["armL2"] = quat.fromEuler(new quat.create(), -10, 0, 0);
     walkKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
     walkKeyframe1["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
     walkKeyframe1["legL1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
@@ -441,10 +445,11 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe1);
     let walkKeyframe2 = [];
+    walkKeyframe2["cameraT"] = new vec3.fromValues(-0.1, 0, 60);
     walkKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
-    walkKeyframe2["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
     walkKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -454,11 +459,12 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkData.push(walkKeyframe2);
     let walkKeyframe3 = [];
+    walkKeyframe3["cameraT"] = new vec3.fromValues(-0.3, -1, 60);
     walkKeyframe3["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
-    walkKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
-    walkKeyframe3["armL2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe3["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
     walkKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
     walkKeyframe3["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
     walkKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -70, 0, 0);
@@ -467,10 +473,11 @@ export default class Assignment2 extends cs380.BaseApp {
     walkKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
     walkData.push(walkKeyframe3);
     let walkKeyframe4 = [];
+    walkKeyframe4["cameraT"] = new vec3.fromValues(0, 0, 60);
     walkKeyframe4["bodyT"] = new vec3.fromValues(0, 0, 0);
     walkKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
-    walkKeyframe4["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
     walkKeyframe4["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe4["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -485,10 +492,11 @@ export default class Assignment2 extends cs380.BaseApp {
     // Sit
     let sitData = [];
     let sitKeyframe1 = [];
+    sitKeyframe1["cameraT"] = new vec3.fromValues(0, -3, 60);
     sitKeyframe1["bodyT"] = new vec3.fromValues(0, - 3, 1);
     sitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 60, 0, 0);
     sitKeyframe1["head"] = quat.fromEuler(new quat.create(), -60, 0, 0);
-    sitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
     sitKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     sitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     sitKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
@@ -499,6 +507,57 @@ export default class Assignment2 extends cs380.BaseApp {
     sitData.push(sitKeyframe1);
     let sitFrameList = [1];
     createAnimation("sit", sitData, 0.1, 0, 0.5, sitFrameList);
+
+    // Hit
+    let hitData = [];
+
+    let hitKeyframe1 = [];
+    hitKeyframe1["cameraT"] = new vec3.fromValues(0, 0, 65);
+    hitKeyframe1["bodyT"] = new vec3.fromValues(0, 0, 1);
+    hitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), -10, 0, 0);
+    hitKeyframe1["head"] = quat.fromEuler(new quat.create(), 10, 10, 0);
+    hitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -110, -30, -20);
+    hitKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, -30, 0);
+    hitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe1["legL1"] = quat.fromEuler(new quat.create(), 40, 0, 0);
+    hitKeyframe1["legL2"] = quat.fromEuler(new quat.create(), -20, 0, 0);
+    hitKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -40, 0, 0);
+    hitKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitData.push(hitKeyframe1);
+
+    let hitKeyframe2 = [];
+    hitKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 65);
+    hitKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 1);
+    hitKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitKeyframe2["head"] = quat.fromEuler(new quat.create(), -10, -10, 0);
+    hitKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -80, 30, -30);
+    hitKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 30, 0);
+    hitKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 40, 0, 0);
+    hitKeyframe2["legL2"] = quat.fromEuler(new quat.create(), -20, 0, 0);
+    hitKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -40, 0, 0);
+    hitKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitData.push(hitKeyframe2);
+
+    let hitKeyframe3 = [];
+    hitKeyframe3["cameraT"] = new vec3.fromValues(0, 0, 62);
+    hitKeyframe3["bodyT"] = new vec3.fromValues(0, 0, 1);
+    hitKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitData.push(hitKeyframe3);
+
+    let hitFrameList = [0.4, 0.2, 0.4];
+    createAnimation("hit", hitData, 0.3, 0, 0.5, hitFrameList);
 
   }
 
@@ -583,6 +642,7 @@ export default class Assignment2 extends cs380.BaseApp {
       if (currentMoveRatio > 0.8){
         currentMoveRatio = 1
       }
+      this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
       this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
       this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
@@ -615,6 +675,7 @@ export default class Assignment2 extends cs380.BaseApp {
     if (currentMoveRatio > 0.8){
       currentMoveRatio = 1
     }
+    this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
     this.animationMove(this.bodyCube.transform.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
     this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
@@ -634,11 +695,11 @@ export default class Assignment2 extends cs380.BaseApp {
       for(let j = 0; j < mappedList.length; j++){
         if(key == mappedList[j]){
           this.setAnimationStatus(i);
+          console.log(`key down: ${key}`);
           return;
         }
       }
     }
-    console.log(`key down: ${key}`);
   }
 
   onKeyUp(key) {
