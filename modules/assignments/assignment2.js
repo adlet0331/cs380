@@ -127,10 +127,12 @@ export default class Assignment2 extends cs380.BaseApp {
     const weaponCone = cs380.Mesh.fromData(cs380.primitives.generateCone(5, 2, 5));
 
     const arcBallCube = cs380.Mesh.fromData(cs380.primitives.generateCube(5, 5, 5));
+    const arcBallCylinder = cs380.Mesh.fromData(cs380.primitives.generateCylinder(10, 5, 5))
+    const arcBallCone = cs380.Mesh.fromData(cs380.primitives.generateCone(10, 5, 5))
 
     this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
-    this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh);
+    this.thingsToClear.push(legupCubeMesh, legmidCubeMesh, legdownCubeMesh, shoesCubeMesh, arcBallCube, arcBallCylinder, arcBallCone);
 
     // initialize picking shader & buffer
     const pickingShader = await cs380.buildShader(cs380.PickingShader);
@@ -386,9 +388,9 @@ export default class Assignment2 extends cs380.BaseApp {
     defaultKeyframe1["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
     defaultKeyframe1["armR1"] = quat.clone(this.rightArmjoint.localRotation);
     defaultKeyframe1["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
-    defaultKeyframe1["legL1"] = quat.clone(this.leftLegjoint.localRotation);
+    defaultKeyframe1["legL1"] = quat.clone(this.leftLegUpjoint.transform.localRotation);
     defaultKeyframe1["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
-    defaultKeyframe1["legR1"] = quat.clone(this.rightLegjoint.localRotation);
+    defaultKeyframe1["legR1"] = quat.clone(this.rightLegUpjoint.transform.localRotation);
     defaultKeyframe1["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
     defaultKeyframe1["timeRatio"] = 1;
     defaultData.push(defaultKeyframe1);
@@ -730,9 +732,9 @@ export default class Assignment2 extends cs380.BaseApp {
     data["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
     data["armR1"] = quat.clone(this.rightArmjoint.localRotation);
     data["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
-    data["legL1"] = quat.clone(this.leftLegjoint.localRotation);
+    data["legL1"] = quat.clone(this.leftLegUpjoint.transform.localRotation);
     data["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
-    data["legR1"] = quat.clone(this.rightLegjoint.localRotation);
+    data["legR1"] = quat.clone(this.rightLegUpjoint.transform.localRotation);
     data["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
     customData.push(data);
     let customFrameList = [1];
@@ -774,7 +776,8 @@ export default class Assignment2 extends cs380.BaseApp {
     this.prevMouseY = this.currMouseY;
     this.currMouseX = e.clientX - rect.left;
     this.currMouseY = rect.bottom - e.clientY;
-    console.log(`Move ${this.prevMouseX}, ${this.prevMouseY} -> ${this.currMouseX}, ${this.currMouseY}`)
+    //console.log(`Move ${this.prevMouseX}, ${this.prevMouseY} -> ${this.currMouseX}, ${this.currMouseY}`)
+    this.arcBallUpdate()
   }
 
   onMouseUp(e) {
@@ -789,13 +792,12 @@ export default class Assignment2 extends cs380.BaseApp {
     }
 
     //arcball center : 401, 401
-
-    let roottwo = Math.sqrt(2)
     let relativePX = this.prevMouseX / 401 - 1
     let relativePY = this.prevMouseY / 401 - 1
     let relativeCX = this.currMouseX / 401 - 1
     let relativeCY = this.currMouseY / 401 - 1
 
+    if (Math.pow(relativePX, 2) + Math.pow(relativePY, 2) >=1) return;
     if (Math.pow(relativeCX, 2) + Math.pow(relativeCY, 2) >=1) return;
 
     let v1 = vec3.fromValues(relativePX, relativePY, Math.sqrt(1 - Math.pow(relativePX, 2) - Math.pow(relativePY, 2)));
@@ -805,10 +807,10 @@ export default class Assignment2 extends cs380.BaseApp {
     let axisVect = vec3.create()
     vec3.cross(axisVect, v1, v2);
     vec3.normalize(axisVect, axisVect);
-    console.log(`Angle : ${angle} \nAxis: ${axisVect}`)
+    //console.log(`Angle : ${angle} \nAxis: ${axisVect}`)
 
     let rotateQuat = quat.create();
-    quat.setAxisAngle(rotateQuat, axisVect, angle * 2)
+    quat.setAxisAngle(rotateQuat, axisVect, angle)
     quat.normalize(rotateQuat, rotateQuat)
     quat.multiply(this.SelectedObject.localRotation, rotateQuat, this.SelectedObject.localRotation)
   }
@@ -826,10 +828,7 @@ export default class Assignment2 extends cs380.BaseApp {
 
   update(elapsed, dt) {
     // Updates before rendering here
-    // if (!this.Mousepressed)
-      // this.simpleOrbitControl.update(dt);
-
-    this.arcBallUpdate(dt);
+    //this.arcBallUpdate();
 
     // Render picking information first
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingBuffer.fbo);
@@ -864,6 +863,5 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     // Animation
     this.updateAnimation(elapsed);
-    //quat.rotateY(this.bodyjoint.localRotation, this.bodyjoint.localRotation, dt / 2);
   }
 }

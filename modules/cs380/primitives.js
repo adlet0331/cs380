@@ -255,7 +255,7 @@ export function generateCone(sides = 16, radius = 1, height = 1) {
       0
     )
 
-    addTri(p0, p1, p2)
+    addTri(p1, p0, p2)
   }
 
   return data;
@@ -335,7 +335,7 @@ export function generateCylinder(sides = 16, radius = 1, height = 1) {
       0
     )
 
-    addTri(p0, p1, p2)
+    addTri(p1, p0, p2)
   }
 
   return data;
