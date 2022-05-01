@@ -13,7 +13,7 @@ export default class Assignment2 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 7.5, 60);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 60);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -125,6 +125,8 @@ export default class Assignment2 extends cs380.BaseApp {
     const thinCylinderMesh = cs380.Mesh.fromData(cs380.primitives.generateCylinder(5, 0.6, 30))
     const weaponSphere = cs380.Mesh.fromData(cs380.primitives.generateSphere());
     const weaponCone = cs380.Mesh.fromData(cs380.primitives.generateCone(5, 2, 5));
+
+    const arcBallCube = cs380.Mesh.fromData(cs380.primitives.generateCube(5, 5, 5));
 
     this.thingsToClear.push(headCubeMesh, headHairMesh, unitpixelMesh, bodyCubeMesh, bodyDownCubeMesh);
     this.thingsToClear.push(armClothCubeMesh, armupCubeMesh, armdownCubeMesh);
@@ -260,7 +262,9 @@ export default class Assignment2 extends cs380.BaseApp {
     this.rightDownShoeCube = generateMesh(shoesCubeMesh, this.shoescolor, 6, this.rightDownLegCube.transform);
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
-    // Left Leg
+    // ArcBall Cube
+    this.ArcBallAttatchedCube = generateMesh(arcBallCube, "#FF0000", 7, null);
+    vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, 0, 0)
 
     // Event listener for interactions
     this.handleKeyDown = (e) => {
@@ -332,15 +336,15 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = true;
 
     this.Idx2ArcTransform = []
-    this.Idx2ArcTransform.push(this.bodyjoint);
+    //this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.headjoint);
     this.Idx2ArcTransform.push(this.bodyjoint);
     this.Idx2ArcTransform.push(this.leftArmjoint);
     this.Idx2ArcTransform.push(this.rightArmjoint);
-    this.Idx2ArcTransform.push(this.leftLegjoint);
-    this.Idx2ArcTransform.push(this.rightLegjoint);
+    this.Idx2ArcTransform.push(this.leftLegUpjoint.transform);
+    this.Idx2ArcTransform.push(this.rightLegUpjoint.transform);
+    this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
 
-    this.IdxSpeedList = [1e3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3, 1e4 * 3]
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit"]
@@ -595,15 +599,15 @@ export default class Assignment2 extends cs380.BaseApp {
       }
       this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
       this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-      this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+      this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
       this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
       this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
       this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
       this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
-      this.animationRotate(this.leftLegjoint.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+      this.animationRotate(this.leftLegUpjoint.transform.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
       this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
-      this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+      this.animationRotate(this.rightLegUpjoint.transform.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
       this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
       return;
     }
@@ -628,15 +632,15 @@ export default class Assignment2 extends cs380.BaseApp {
     }
     this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
     this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
-    this.animationRotate(this.bodyCube.transform.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+    this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
     this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
     this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
     this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
     this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
-    this.animationRotate(this.leftLegjoint.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+    this.animationRotate(this.leftLegUpjoint.transform.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
     this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
-    this.animationRotate(this.rightLegjoint.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+    this.animationRotate(this.rightLegUpjoint.transform.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
     this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
   }
 
@@ -736,8 +740,6 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   onMouseDown(e) {
-    console.log(this.animationStatusList)
-    console.log(this.status2BindedList)
     const { left, bottom } = gl.canvas.getBoundingClientRect();
     const mouseX = e.clientX - left;
     const mouseY = bottom - e.clientY;
@@ -756,13 +758,15 @@ export default class Assignment2 extends cs380.BaseApp {
     }
 
     this.Mousepressed = true;
-    this.SelectedObjIdx = index;
+    this.SelectedObjIdx = index - 1;
+    if (this.SelectedObjIdx < 0) return;
     this.SelectedObject = this.Idx2ArcTransform[this.SelectedObjIdx];
-    console.log(`Select Index: ${index}`);
+    console.log(`Select Index: ${index - 1}`);
+
+    vec3.set(this.camera.transform.localPosition, this.SelectedObject.localPosition[0], this.SelectedObject.localPosition[1], 60)
   }
 
   onMouseMove(e) {
-    console.log("Move")
     const canvas = gl.canvas;
     if (!this.Mousepressed) return;
     const rect = canvas.getBoundingClientRect();
@@ -770,6 +774,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.prevMouseY = this.currMouseY;
     this.currMouseX = e.clientX - rect.left;
     this.currMouseY = rect.bottom - e.clientY;
+    console.log(`Move ${this.prevMouseX}, ${this.prevMouseY} -> ${this.currMouseX}, ${this.currMouseY}`)
   }
 
   onMouseUp(e) {
@@ -778,49 +783,34 @@ export default class Assignment2 extends cs380.BaseApp {
     this.firstClicking = false;
   }
 
-  arcBallUpdate(dt, damping = 0.9) {
+  arcBallUpdate() { 
     if (!this.Mousepressed){
       return;
     }
 
-    let speed = this.IdxSpeedList[this.SelectedObjIdx]
+    //arcball center : 401, 401
 
-    let deltaX = (this.currMouseX - this.prevMouseX) / gl.canvas.clientWidth;
-    let deltaY = (this.currMouseY - this.prevMouseY) / gl.canvas.clientHeight;
-    if (!this.pressed) {
-      const damp = Math.pow(damping, dt);
-      this.prevMouseX = damp * this.prevMouseX + (1 - damp) * this.currMouseX;
-      this.prevMouseY = damp * this.prevMouseY + (1 - damp) * this.currMouseY;
-    } else {
-      this.prevMouseX = this.currMouseX;
-      this.prevMouseY = this.currMouseY;
-    }
+    let roottwo = Math.sqrt(2)
+    let relativePX = this.prevMouseX / 401 - 1
+    let relativePY = this.prevMouseY / 401 - 1
+    let relativeCX = this.currMouseX / 401 - 1
+    let relativeCY = this.currMouseY / 401 - 1
 
-    speed *= Math.PI / 180;
-    if (this.radius == 0) speed *= -1;
-    this.arcBallAltitude += deltaY * speed * dt;
-    this.arcBallAltitude = Math.max(0.0001, Math.min(this.arcBallAltitude, Math.PI - 0.0001));
+    if (Math.pow(relativeCX, 2) + Math.pow(relativeCY, 2) >=1) return;
 
-    this.arcBallAzimuth += deltaX * speed * dt;
-    while (this.arcBallAzimuth < -Math.PI) this.arcBallAzimuth += 2 * Math.PI;
-    while (this.arcBallAzimuth > Math.PI) this.arcBallAzimuth -= 2 * Math.PI;
+    let v1 = vec3.fromValues(relativePX, relativePY, Math.sqrt(1 - Math.pow(relativePX, 2) - Math.pow(relativePY, 2)));
+    let v2 = vec3.fromValues(relativeCX, relativeCY, Math.sqrt(1 - Math.pow(relativeCX, 2) - Math.pow(relativeCY, 2)));
+     
+    let angle = vec3.angle(v1, v2);
+    let axisVect = vec3.create()
+    vec3.cross(axisVect, v1, v2);
+    vec3.normalize(axisVect, axisVect);
+    console.log(`Angle : ${angle} \nAxis: ${axisVect}`)
 
-    const dir = this.arcBallDir;
-    const dirR = this.arcBallRadius == 0 ? 1 : this.arcBallRadius;
-    const pos = this.SelectedObject.localPosition;
-
-    const r = dirR * Math.sin(this.arcBallAltitude);
-    const y = - dirR * Math.cos(this.arcBallAltitude);
-    const x = - r * Math.cos(this.arcBallAzimuth);
-    const z = r * Math.sin(this.arcBallAzimuth);
-
-    vec3.set(dir, x, y, z);
-    if (this.radius > 0) vec3.add(pos, this.SelectedObject.localPosition, dir);
-    else vec3.set(pos, ...this.SelectedObject.localPosition);
-
-    vec3.normalize(dir, dir);
-    vec3.negate(dir, dir);
-    this.SelectedObject.lookAt(dir, this.arcBallUp);
+    let rotateQuat = quat.create();
+    quat.setAxisAngle(rotateQuat, axisVect, angle * 2)
+    quat.normalize(rotateQuat, rotateQuat)
+    quat.multiply(this.SelectedObject.localRotation, rotateQuat, this.SelectedObject.localRotation)
   }
 
   finalize() {
