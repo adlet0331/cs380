@@ -265,7 +265,7 @@ export default class Assignment2 extends cs380.BaseApp {
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
     // ArcBall Cube
-    this.ArcBallAttatchedCube = generateMesh(arcBallCube, "#FF0000", 7, null);
+    this.ArcBallAttatchedCube = generateMesh(arcBallCube , "#FF0000", 7, null);
     vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, 0, 0)
 
     // Event listener for interactions
@@ -349,7 +349,7 @@ export default class Assignment2 extends cs380.BaseApp {
 
 
     // Animation Status Handling 
-    this.animationStatusList = ["default", "walk", "sit", "hit"]
+    this.animationStatusList = ["default", "walk", "sit", "hit", "jump", "swim"]
     this.currentStatusKey = "default"
     this.animationStartTime = 0
     this.animationKeyframeIndex = 0
@@ -364,11 +364,13 @@ export default class Assignment2 extends cs380.BaseApp {
 
     // Input per Animation Dictionary
     this.status2BindedList = []
-    this.keyBindNum = 4
+    this.keyBindNum = 6
     this.status2BindedList["default"] = ["d"]
     this.status2BindedList["sit"] = ["s"]
     this.status2BindedList["walk"] = ["w"]
     this.status2BindedList["hit"] = ["a"]
+    this.status2BindedList["jump"] = [" "]
+    this.status2BindedList["swim"] = ["e"]
 
     // Animation infos
     this.animationInfoDict = [];
@@ -528,6 +530,120 @@ export default class Assignment2 extends cs380.BaseApp {
     let hitFrameList = [0.4, 0.2, 0.4];
     this.createAnimation("hit", hitData, 0.3, 0, 0.5, hitFrameList);
 
+    // Jump
+    let jumpData = [];
+    let jumpKeyframe1 = [];
+    jumpKeyframe1["cameraT"] = new vec3.fromValues(0, 8, 63);
+    jumpKeyframe1["bodyT"] = new vec3.fromValues(0, 10, 1);
+    jumpKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe1["head"] = quat.fromEuler(new quat.create(), 30, 20, 0);
+    jumpKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe1["armR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    jumpKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe1["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpData.push(jumpKeyframe1);
+
+    let jumpKeyframe2 = [];
+    jumpKeyframe2["cameraT"] = new vec3.fromValues(0, 5, 65);
+    jumpKeyframe2["bodyT"] = new vec3.fromValues(0, 5, 1);
+    jumpKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe2["head"] = quat.fromEuler(new quat.create(), -30, -20, 0);
+    jumpKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    jumpKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpData.push(jumpKeyframe2);
+
+    let jumpKeyframe3 = [];
+    jumpKeyframe3["cameraT"] = new vec3.fromValues(0, 0, 62);
+    jumpKeyframe3["bodyT"] = new vec3.fromValues(0, -3, 1);
+    jumpKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe3["head"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpData.push(jumpKeyframe3);
+
+    let jumpFrameList = [0.4, 0.3, 0.3];
+    this.createAnimation("jump", jumpData, 0.4, 0, 0.1, jumpFrameList);
+
+    // Swim
+    let swimData = [];
+    let swimKeyframe1 = [];
+    swimKeyframe1["cameraT"] = new vec3.fromValues(0, 5, 70);
+    swimKeyframe1["bodyT"] = new vec3.fromValues(0, 5, 1);
+    swimKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe1["head"] = quat.fromEuler(new quat.create(), -90, 10, 10);
+    swimKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 170, 0, 20);
+    swimKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, -10, -10);
+    swimKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 170, 0, 0);
+    swimKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimKeyframe1["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimData.push(swimKeyframe1);
+
+    let swimKeyframe2 = [];
+    swimKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 65);
+    swimKeyframe2["bodyT"] = new vec3.fromValues(0, 0, 1);
+    swimKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe2["head"] = quat.fromEuler(new quat.create(), -110, -10, -10);
+    swimKeyframe2["armL1"] = quat.fromEuler(new quat.create(), 170, 0, -20);
+    swimKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 190, 10, 10);
+    swimKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    swimKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimData.push(swimKeyframe2);
+
+    let swimKeyframe3 = [];
+    swimKeyframe3["cameraT"] = new vec3.fromValues(0, 5, 70);
+    swimKeyframe3["bodyT"] = new vec3.fromValues(0, 5, 1);
+    swimKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe3["head"] = quat.fromEuler(new quat.create(), -90, 10, 10);
+    swimKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 170, 0, 20);
+    swimKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 0, -10, -10);
+    swimKeyframe3["armR1"] = quat.fromEuler(new quat.create(), 170, 0, 0);
+    swimKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimData.push(swimKeyframe3);
+
+    let swimKeyframe4 = [];
+    swimKeyframe4["cameraT"] = new vec3.fromValues(0, 0, 65);
+    swimKeyframe4["bodyT"] = new vec3.fromValues(0, 0, 1);
+    swimKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe4["head"] = quat.fromEuler(new quat.create(), -110, -10, -10);
+    swimKeyframe4["armL1"] = quat.fromEuler(new quat.create(), 170, 0, -20);
+    swimKeyframe4["armL2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 190, 10, 10);
+    swimKeyframe4["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    swimKeyframe4["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe4["legL2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimKeyframe4["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimData.push(swimKeyframe4);
+
+    let swimFrameList = [0.04, 0.33, 0.33, 0.33];
+    this.createAnimation("swim", swimData, 1.5, 0, 0.1, swimFrameList);
   }
 
   setAnimationStatus(idx){
