@@ -42,16 +42,16 @@ export default class Lab6App extends cs380.BaseApp {
     const meshLoaderResult = await cs380.MeshLoader.load({
       bunny: "resources/models/bunny.obj",
     });
-    const rabitMeshData = cs380.Mesh.fromData(meshLoaderResult.bunny)
     const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny)
 
     const simpleShader = await cs380.buildShader(SimpleShader);
     // TODO: import BlinnPhongShader
+    const blinnPhongShader = await cs380.buildShader(BlinnPhongShader);
 
     this.thingsToClear.push(sphereMesh);
     this.thingsToClear.push(bunnyMesh);
     this.thingsToClear.push(simpleShader);
-    this.thingsToClear.push(/*mesh & shader...*/);
+    this.thingsToClear.push(blinnPhongShader);
     
     // initialize picking shader & buffer
     const pickingShader = await cs380.buildShader(cs380.PickingShader);
@@ -78,7 +78,7 @@ export default class Lab6App extends cs380.BaseApp {
     // initialize a sphere Object
     this.sphere = new cs380.PickableObject(
         sphereMesh, 
-        simpleShader,
+        blinnPhongShader,
         pickingShader,
         1
     );
@@ -89,7 +89,7 @@ export default class Lab6App extends cs380.BaseApp {
     // TODO: initialize PickableObject or RenderObject for the imported model
     this.bunny = new cs380.PickableObject(
       bunnyMesh,
-      simpleShader,
+      blinnPhongShader,
       pickingShader,
       2
     );
