@@ -37,18 +37,21 @@ void main() {
     vec4 world_light_dir = vec4(1.0, 1.0, 1.0, 0.0);
     mat4 W2C = inverse(cameraTransform);
     vec3 intensity = vec3(0.0, 0.0, 0.0);
-    float ambient = 0.0f;
-    
-    float diffuse = 1.0f;
+
     vec3 N = normalize(frag_normal.xyz);
-    vec3 L = normalize((W2C * world_light_dir).xyz);
+    float shinness = 50.0f;
     
     for (int i=0; i<numLights; i++){
         if (!lights[i].enabled) continue;
         
         if (lights[i].type == DIRECTIONAL) {
             // TODO: implement diffuse and specular reflections for directional light
-            diffuse = min(max(dot(N, L) * lights[i].illuminance, 0.0f), 1.0f);
+            intensity += mainColor * min(max(dot(N, -lights[i].dir) * lights[i].illuminance, 0.0f), 1.0f);
+            
+            vec3 vvec = vec3(cameraTransform[0][0] - frag_pos[0], cameraTransform[0][1] - frag_pos[1], cameraTransform[0][2]- frag_pos[2]);
+            vvec -= lights[i].dir;
+            vvec = normalize(vvec);
+            intensity += mainColor * min(max(pow(abs(dot(N, vvec)), shinness), 0.0f), 1.0f);
         }
         else if (lights[i].type == POINT) {
             continue;
@@ -58,14 +61,11 @@ void main() {
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
-            ambient = lights[i].illuminance;
+            intensity += mainColor * lights[i].illuminance;
         }
     }
-
-    float shininess = 3.0f
     
-    
-    output_color = vec4(intensity * diffuse + ambient, 1.0);
+    output_color = vec4(intensity, 1.0f);
     
     output_color.rgb = pow(output_color.rgb, vec3(1.0 / 2.2));  // Gamma correction
 }
