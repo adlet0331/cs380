@@ -5,6 +5,8 @@ import * as cs380 from "../cs380/cs380.js";
 
 import { LightType, Light, BlinnPhongShader } from "../blinn_phong.js";
 
+import { SimpleShader } from "../simple_shader.js";
+
 export default class Assignment3 extends cs380.BaseApp {
   async initialize() {
     // Basic setup for camera
@@ -21,15 +23,78 @@ export default class Assignment3 extends cs380.BaseApp {
     );
 
     this.thingsToClear = [];
+
+    // SimpleOrbitControl
+    const orbitControlCenter = vec3.fromValues(0, 0, 0);
+    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+      this.camera,
+      orbitControlCenter
+    );
+    this.thingsToClear.push(this.simpleOrbitControl);
   
     // initialize picking shader & buffer
     const pickingShader = await cs380.buildShader(cs380.PickingShader);
     this.pickingBuffer = new cs380.PickingBuffer();
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(pickingShader, this.pickingBuffer);
+
+    // generate a sphere
+    const sphereMeshData = cs380.primitives.generateSphere();
+    const sphereMesh = cs380.Mesh.fromData(sphereMeshData);
+
+    // TODO: import a mesh model
+    const meshLoaderResult = await cs380.MeshLoader.load({
+      bunny: "resources/models/bunny.obj",
+    });
+    const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny)
+
+    const simpleShader = await cs380.buildShader(SimpleShader);
+    // TODO: import BlinnPhongShader
+    const blinnPhongShader = await cs380.buildShader(BlinnPhongShader);
+
+    this.thingsToClear.push(sphereMesh);
+    this.thingsToClear.push(bunnyMesh);
+    this.thingsToClear.push(simpleShader);
+    this.thingsToClear.push(blinnPhongShader);
     
     // initialize light sources
     this.lights = [];
+    
+    //For Start First
+    const light0 = new Light(); 
+    light0.illuminance = 0.1;
+    light0.type = LightType.AMBIENT;
+    this.lights.push(light0);
+
+    const light1 = new Light();
+    const lightDir = vec3.create();
+    vec3.set(lightDir, -1, -1, -1);
+    light1.illuminance = 0.9;
+    light1.transform.lookAt(lightDir);
+    light1.type = LightType.DIRECTIONAL;
+    this.lights.push(light1);
+
+    // initialize a sphere Object
+    this.sphere = new cs380.PickableObject(
+      sphereMesh, 
+      blinnPhongShader,
+      pickingShader,
+      1
+    );
+    vec3.set(this.sphere.transform.localPosition, -1.2, 0, 0);
+    vec3.set(this.sphere.transform.localScale, 0.7, 0.7, 0.7);
+    this.sphere.uniforms.lights = this.lights; 
+
+    // TODO: initialize PickableObject or RenderObject for the imported model
+    this.bunny = new cs380.PickableObject(
+      bunnyMesh,
+      blinnPhongShader,
+      pickingShader,
+      2
+    );
+    vec3.set(this.bunny.transform.localPosition, 1.2, 0, 0);
+    vec3.set(this.bunny.transform.localScale, 0.7, 0.7, 0.7);
+    this.bunny.uniforms.lights = this.lights;
    
     // Event listener for interactions
     this.handleKeyDown = (e) => {
@@ -47,6 +112,10 @@ export default class Assignment3 extends cs380.BaseApp {
     gl.canvas.addEventListener("mousedown", this.handleMouseDown);
 
     document.getElementById("settings").innerHTML = `
+      <label for="setting-ambient">Ambient Light</label>
+      <input type="range" min=0 max=1 value=0.1 step=0.01 id="setting-ambient">
+      <label for="setting-illuminance">Directional Light Illuminance</label>
+      <input type="range" min=0 max=1 value=0.9 step=0.01 id="setting-illuminance">
       <h3>Basic requirements</h3>
       <ul>
         <li>Implement point light, and spotlight [2 pts]</li>
@@ -58,6 +127,24 @@ export default class Assignment3 extends cs380.BaseApp {
       Use your creativity (animation, interaction, etc.) to make each light source is recognized respectively. <br/>
       <strong>Start early!</strong>
     `;
+    
+    // Setup GUIs
+    const setInputBehavior = (id, onchange, initialize, callback) => {
+      const input = document.getElementById(id);
+      const callbackWrapper = 
+          () => callback(input.value); // NOTE: must parse to int/float for numeric values
+      if (onchange) {
+        input.onchange = callbackWrapper;
+        if (initialize) input.onchange();
+      } else {
+        input.oninput = callbackWrapper;
+        if (initialize) input.oninput();
+      }
+    }
+    setInputBehavior('setting-ambient', true, true,
+        (val) => { this.lights[0].illuminance=val;});
+    setInputBehavior('setting-illuminance', true, true,
+        (val) => { this.lights[1].illuminance=val;});
 
     // GL settings
     gl.enable(gl.CULL_FACE);
@@ -88,6 +175,7 @@ export default class Assignment3 extends cs380.BaseApp {
   }
 
   update(elapsed, dt) {
+    this.simpleOrbitControl.update(dt);
     // Updates before rendering here
     
     // Render picking information first
@@ -99,6 +187,8 @@ export default class Assignment3 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // renderPicking() here
+    this.sphere.renderPicking(this.camera);
+    this.bunny.renderPicking(this.camera);
     
     // Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -109,5 +199,7 @@ export default class Assignment3 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     // render() here
+    this.sphere.render(this.camera);
+    this.bunny.render(this.camera);
   }
 }
