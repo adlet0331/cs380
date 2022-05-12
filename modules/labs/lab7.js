@@ -11,7 +11,7 @@ export default class Lab7App extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 8);
+    vec3.set(this.camera.transform.localPosition, 0, 10, 30);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -33,14 +33,14 @@ export default class Lab7App extends cs380.BaseApp {
 
     // TODO: import a mesh model
     const meshLoaderResult = await cs380.MeshLoader.load({
-      suzanne: "resources/models/suzanne.obj",
+      jerry: "resources/models/JERRY.PSDout.obj",
     });
-    const suzanneMesh = cs380.Mesh.fromData(meshLoaderResult.suzanne);
+    const jerryMesh = cs380.Mesh.fromData(meshLoaderResult.jerry);
     
     // import ToonShader
     const toonShader = await cs380.buildShader(ToonShader);
 
-    this.thingsToClear.push(suzanneMesh);
+    this.thingsToClear.push(jerryMesh);
     this.thingsToClear.push(toonShader);
     
     // initialize picking shader & buffer
@@ -53,7 +53,7 @@ export default class Lab7App extends cs380.BaseApp {
     this.lights = [];
     const lightDir = vec3.create();
 
-    const light0 = new Light(); 
+    const light0 = new Light();  
     light0.illuminance = 0.1;
     light0.type = LightType.AMBIENT;
     this.lights.push(light0);
@@ -66,14 +66,14 @@ export default class Lab7App extends cs380.BaseApp {
     this.lights.push(light1);
    
     // TODO: initialize PickableObject for the imported model
-    this.suzanne = new cs380.PickableObject(
-        suzanneMesh,
+    this.jerry = new cs380.PickableObject(
+        jerryMesh,
         toonShader,
         pickingShader,
         1
     ); 
-    this.suzanne.uniforms.mainColor = vec3.fromValues(1, 0.4, 0.3);
-    this.suzanne.uniforms.lights = this.lights;
+    this.jerry.uniforms.mainColor = vec3.fromValues(1, 0.4, 0.3);
+    this.jerry.uniforms.lights = this.lights;
     
     // Event listener for interactions
     this.handleMouseDown = (e) => {
@@ -143,7 +143,7 @@ export default class Lab7App extends cs380.BaseApp {
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    this.suzanne.renderPicking(this.camera);
+    this.jerry.renderPicking(this.camera);
 
     // 2. Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -153,6 +153,6 @@ export default class Lab7App extends cs380.BaseApp {
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-    this.suzanne.render(this.camera);
+    this.jerry.render(this.camera);
   }
 }
