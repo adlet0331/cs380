@@ -55,7 +55,8 @@ void main() {
         vec3 lightColor = lights[i].rgb;
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
 
-        vec3 light_pos = lights[i].pos;
+        vec4 w_light_pos = vec4(lights[i].pos[0], lights[i].pos[1], lights[i].pos[2], 0) * W2C;
+        vec3 light_pos = w_light_pos.xyz;
 
         // Set this for Reflection
         vec3 light_vec;
@@ -70,8 +71,8 @@ void main() {
             float dist = distance(light_pos, frag_pos_vec);
             // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
             float a = 1.0;
-            float b = 0.0;
-            float c = 1.0;
+            float b = 0.14;
+            float c = 0.07;
             
             float Attenuation = 1.0 / (a + b * dist + c * dist * dist);
 
