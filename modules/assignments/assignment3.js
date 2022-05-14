@@ -62,17 +62,29 @@ export default class Assignment3 extends cs380.BaseApp {
     
     //For Start First
     const light0 = new Light(); 
-    light0.illuminance = 0.1;
     light0.type = LightType.AMBIENT;
+    vec3.set(light0.rgb, 1.0, 1.0, 1.0);
     this.lights.push(light0);
 
     const light1 = new Light();
     const lightDir = vec3.create();
     vec3.set(lightDir, -1, -1, -1);
-    light1.illuminance = 0.9;
     light1.transform.lookAt(lightDir);
+    vec3.set(light1.rgb, 0.0, 1.0, 0.0);
     light1.type = LightType.DIRECTIONAL;
     this.lights.push(light1);
+
+    const light2 = new Light();
+    vec3.set(light2.rgb, 1.0, 1.0, 1.0);
+    vec3.set(light2.pos, 0.0, 0.0, 0.0);
+    light2.type = LightType.POINT;
+    this.lights.push(light2);
+
+    const light3 = new Light();
+    light1.transform.lookAt(lightDir);
+    vec3.set(light3.rgb, 1.0, 1.0, 1.0);
+    light3.type = LightType.SPOTLIGHT;
+    this.lights.push(light3);
 
     // initialize a sphere Object
     this.sphere = new cs380.PickableObject(
@@ -95,6 +107,8 @@ export default class Assignment3 extends cs380.BaseApp {
     vec3.set(this.bunny.transform.localPosition, 1.2, 0, 0);
     vec3.set(this.bunny.transform.localScale, 0.7, 0.7, 0.7);
     this.bunny.uniforms.lights = this.lights;
+    this.bunny.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.bunny.uniforms.mainColor, "#FF0000");
    
     // Event listener for interactions
     this.handleKeyDown = (e) => {
@@ -112,10 +126,20 @@ export default class Assignment3 extends cs380.BaseApp {
     gl.canvas.addEventListener("mousedown", this.handleMouseDown);
 
     document.getElementById("settings").innerHTML = `
-      <label for="setting-ambient">Ambient Light</label>
-      <input type="range" min=0 max=1 value=0.1 step=0.01 id="setting-ambient">
+      <label for="setting-ambient">Ambient Light Illuminance</label>
+      <input type="range" min=0 max=1 value=0 step=0.01 id="setting-ambient-illuminance">
       <label for="setting-illuminance">Directional Light Illuminance</label>
-      <input type="range" min=0 max=1 value=0.9 step=0.01 id="setting-illuminance">
+      <input type="range" min=0 max=1 value=0 step=0.01 id="setting-directional-illuminance">
+      <br/>
+      <label for="setting-point">Point Light Illuminance</label>
+      <input type="range" min=0 max=10 value=0 step=0.1 id="setting-point-illuminance">
+      <label for="setting-point">Point Light X Transform</label>
+      <input type="range" min=-10 max=10 value=0 step=0.1 id="setting-point-x">
+      <br/>
+      <label for="setting-spotlight">SpotLight Illuminance</label>
+      <input type="range" min=0 max=1 value=0 step=0.01 id="setting-spotlight-illuminance">
+      <label for="setting-spotlight">SpotLight X Transform</label>
+      <input type="range" min=-1 max=1 value=1 step=0.01 id="setting-spotlight-x">
       <h3>Basic requirements</h3>
       <ul>
         <li>Implement point light, and spotlight [2 pts]</li>
@@ -141,10 +165,36 @@ export default class Assignment3 extends cs380.BaseApp {
         if (initialize) input.oninput();
       }
     }
-    setInputBehavior('setting-ambient', true, true,
-        (val) => { this.lights[0].illuminance=val;});
-    setInputBehavior('setting-illuminance', true, true,
-        (val) => { this.lights[1].illuminance=val;});
+    setInputBehavior('setting-ambient-illuminance', true, true,
+        (val) => { 
+          console.log("Ambient Illuminance: " + val);
+          this.lights[0].illuminance=val;
+        });
+    setInputBehavior('setting-directional-illuminance', true, true,
+        (val) => { 
+          console.log("Directional Illuminance: " + val);
+          this.lights[1].illuminance=val;
+        });
+    setInputBehavior('setting-point-illuminance', true, true,
+        (val) => { 
+          console.log("Point Illuminance: " + val);
+          this.lights[2].illuminance=val;
+        });
+    setInputBehavior('setting-point-x', true, true,
+        (val) => { 
+          console.log("Point X: " + val);
+          vec3.set(this.lights[2].pos, val, 0.0, 0.0);
+        });
+    setInputBehavior('setting-spotlight-illuminance', true, true,
+        (val) => { 
+          console.log("Spotlight Illuminance: " + val);
+          this.lights[3].illuminance=val;
+        });
+    setInputBehavior('setting-spotlight-x', true, true,
+        (val) => { 
+          console.log("Spotlight X: " + val);
+          this.lights[3].illuminance=val;
+        });
 
     // GL settings
     gl.enable(gl.CULL_FACE);

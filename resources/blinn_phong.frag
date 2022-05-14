@@ -20,6 +20,7 @@ struct Light {
     bool enabled;
     vec3 pos;
     vec3 dir;
+    vec3 rgb;
     float illuminance;
     float angle;
     float angleSmoothness;
@@ -34,35 +35,66 @@ float random(vec3 seed) {
 }
 
 void main() {
-    vec4 world_light_dir = vec4(1.0, 1.0, 1.0, 0.0);
     mat4 W2C = inverse(cameraTransform);
     vec3 intensity = vec3(0.0, 0.0, 0.0);
 
-    vec3 N = normalize(frag_normal.xyz);
-    float shinness = 50.0f;
+    // World 2 Camera
+    vec4 w_frag_normal = frag_normal * W2C;
+    vec3 frag_normal_vec = normalize(w_frag_normal.xyz);
+    vec4 w_frag_pos = frag_pos * W2C;
+    vec3 frag_pos_vec = w_frag_pos.xyz;
+
+    vec4 w_camera_pos= cameraTransform[0];
+    vec3 camera_pos_vec = (w_camera_pos * W2C).xyz;
+
+    float shinness = 30.0f;
     
     for (int i=0; i<numLights; i++){
         if (!lights[i].enabled) continue;
-        
+
+        vec3 lightColor = lights[i].rgb;
+        vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
+
+        vec3 light_pos = lights[i].pos;
+
+        // Set this for Reflection
+        vec3 light_vec;
+        float reflection_intensity;
+
         if (lights[i].type == DIRECTIONAL) {
             // TODO: implement diffuse and specular reflections for directional light
-            intensity += mainColor * min(max(dot(N, -lights[i].dir) * lights[i].illuminance, 0.0f), 1.0f);
-            
-            vec3 vvec = vec3(cameraTransform[0][0] - frag_pos[0], cameraTransform[0][1] - frag_pos[1], cameraTransform[0][2]- frag_pos[2]);
-            vvec -= lights[i].dir;
-            vvec = normalize(vvec);
-            intensity += mainColor * min(max(pow(abs(dot(N, vvec)), shinness), 0.0f), 1.0f);
+            light_vec = normalize(lights[i].dir);
+            reflection_intensity = 1.0;
         }
         else if (lights[i].type == POINT) {
-            continue;
+            float dist = distance(light_pos, frag_pos_vec);
+            // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
+            float a = 1.0;
+            float b = 0.0;
+            float c = 1.0;
+            
+            float Attenuation = 1.0 / (a + b * dist + c * dist * dist);
+
+            light_vec = normalize(frag_pos_vec - light_pos);
+            reflection_intensity = Attenuation;
         }
         else if (lights[i].type == SPOTLIGHT) {
             continue;
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
-            intensity += mainColor * lights[i].illuminance;
+            intensity += newColor;
+            continue;
         }
+        //Diffuse
+        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_vec, -light_vec) , 0.0f), 1.0f);
+
+        //Specular
+        vec3 hvec = normalize(camera_pos_vec - frag_pos_vec);
+
+        vec3 lvec = 2.0 * frag_normal_vec * dot(frag_normal_vec, -light_vec) + light_vec;
+
+        intensity += newColor * reflection_intensity * max(pow(max(dot(lvec, hvec), 0.0f), shinness), 0.0f);
     }
     
     output_color = vec4(intensity, 1.0f);
