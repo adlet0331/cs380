@@ -74,7 +74,13 @@ void main() {
             reflection_intensity = Attenuation;
         }
         else if (lights[i].type == SPOTLIGHT) {
-            continue;
+            vec3 light_direction = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
+            float radian = lights[i].angle;
+            float angleSmoothness = lights[i].angleSmoothness;
+
+            light_vec = normalize(frag_pos.xyz - light_pos);
+            float cosval = dot(light_direction, light_vec) / (length(light_direction) * length(light_vec));
+            reflection_intensity = pow(cosval, angleSmoothness);
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
@@ -84,7 +90,7 @@ void main() {
         vec3 frag_normal_normalized = normalize(frag_normal.xyz);
 
         //Diffuse
-        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_normalized, -light_vec) , 0.0), 1.0);
+        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_normalized, - light_vec) , 0.0), 1.0);
 
         //Specular
         vec3 hvec = normalize(camera_pos_vec - frag_pos.xyz);

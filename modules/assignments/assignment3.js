@@ -14,7 +14,7 @@ export default class Assignment3 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 8);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 20);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -69,8 +69,7 @@ export default class Assignment3 extends cs380.BaseApp {
     this.lights.push(light0);
 
     const light1 = new Light();
-    const lightDir = vec3.create();
-    vec3.set(lightDir, -1, -1, -1);
+    const lightDir = vec3.create(-1, -1, -1);
     light1.transform.lookAt(lightDir);
     vec3.set(light1.rgb, 1.0, 1.0, 0.0);
     light1.type = LightType.DIRECTIONAL;
@@ -83,15 +82,18 @@ export default class Assignment3 extends cs380.BaseApp {
     this.lights.push(light2);
 
     const light3 = new Light();
-    light1.transform.lookAt(lightDir);
+    const lightDir2 = vec3.create(0, -1, 0);
+    light3.transform.lookAt(lightDir2);
     vec3.set(light3.rgb, 1.0, 1.0, 1.0);
     light3.type = LightType.SPOTLIGHT;
+    light3.angleSmoothness = 30.0;
+    light3.angle = Math.PI / 12;
     this.lights.push(light3);
 
   // Generate Plane
-    this.planeX = 6
-    this.planeY = 3
-    this.planeZ = 3
+    this.planeX = 10
+    this.planeY = 2
+    this.planeZ = 10
     const planeBackMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
     const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
     const planeRightMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
@@ -195,13 +197,13 @@ export default class Assignment3 extends cs380.BaseApp {
       <br/>
       <label for="setting-point">Point Light Illuminance</label>
       <input type="range" min=0 max=10 value=0 step=0.1 id="setting-point-illuminance">
-      <label for="setting-point">Point Light X Transform</label>
+      <label for="setting-point">Point Light Z Transform</label>
       <input type="range" min=-1 max=5 value=0 step=0.1 id="setting-point-z">
       <br/>
       <label for="setting-spotlight">SpotLight Illuminance</label>
-      <input type="range" min=0 max=1 value=0 step=0.01 id="setting-spotlight-illuminance">
+      <input type="range" min=0 max=10 value=0 step=0.1 id="setting-spotlight-illuminance">
       <label for="setting-spotlight">SpotLight X Transform</label>
-      <input type="range" min=-1 max=1 value=1 step=0.01 id="setting-spotlight-x">
+      <input type="range" min=-5 max=5 value=0 step=0.01 id="setting-spotlight-x">
       <h3>Basic requirements</h3>
       <ul>
         <li>Implement point light, and spotlight [2 pts]</li>
@@ -255,7 +257,7 @@ export default class Assignment3 extends cs380.BaseApp {
     setInputBehavior('setting-spotlight-x', true, true,
         (val) => { 
           console.log("Spotlight X: " + val);
-          vec3.set(this.lights[3].transform.localPosition, 0, 10, val);
+          vec3.set(this.lights[3].transform.localPosition, val, 10, 0);
         });
 
     // GL settings
