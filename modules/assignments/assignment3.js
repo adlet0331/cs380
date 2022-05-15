@@ -9,6 +9,7 @@ import { SimpleShader } from "../simple_shader.js";
 
 export default class Assignment3 extends cs380.BaseApp {
   async initialize() {
+    // init 
     // Basic setup for camera
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
@@ -18,7 +19,7 @@ export default class Assignment3 extends cs380.BaseApp {
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
       aspectRatio,
-      0.01,
+      0.1,
       100
     );
 
@@ -56,10 +57,11 @@ export default class Assignment3 extends cs380.BaseApp {
     this.thingsToClear.push(bunnyMesh);
     this.thingsToClear.push(simpleShader);
     this.thingsToClear.push(blinnPhongShader);
-    
+  
+  // Light
     // initialize light sources
     this.lights = [];
-    
+        
     //For Start First
     const light0 = new Light(); 
     light0.type = LightType.AMBIENT;
@@ -70,16 +72,15 @@ export default class Assignment3 extends cs380.BaseApp {
     const lightDir = vec3.create();
     vec3.set(lightDir, -1, -1, -1);
     light1.transform.lookAt(lightDir);
-    vec3.set(light1.rgb, 0.0, 1.0, 0.0);
+    vec3.set(light1.rgb, 1.0, 1.0, 0.0);
     light1.type = LightType.DIRECTIONAL;
     this.lights.push(light1);
 
     const light2 = new Light();
     vec3.set(light2.rgb, 1.0, 1.0, 1.0);
-    vec3.set(light2.pos, 0.0, 0.0, 0.0);
     light2.type = LightType.POINT;
+    vec3.set(light2.transform.localPosition, 0, 0, 0);
     this.lights.push(light2);
-    vec3.set(light2.transform.localPosition, 0, 0, -8);
 
     const light3 = new Light();
     light1.transform.lookAt(lightDir);
@@ -87,6 +88,65 @@ export default class Assignment3 extends cs380.BaseApp {
     light3.type = LightType.SPOTLIGHT;
     this.lights.push(light3);
 
+  // Generate Plane
+    this.planeX = 6
+    this.planeY = 3
+    this.planeZ = 3
+    const planeBackMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
+    const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
+    const planeRightMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
+    const planeBottomMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeZ));
+    
+    this.planeBack = new cs380.PickableObject(
+      planeBackMesh,
+      blinnPhongShader,
+      pickingShader,
+      0
+    );
+    quat.rotateX(this.planeBack.transform.localRotation, this.planeBack.transform.localRotation, Math.PI);
+    vec3.set(this.planeBack.transform.localPosition, 0, 0, - this.planeZ / 2);
+    this.planeBack.uniforms.lights = this.lights;
+    this.planeBack.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.planeBack.uniforms.mainColor, "#888888");
+
+    this.planeLeft = new cs380.PickableObject(
+      planeLeftMesh,
+      blinnPhongShader,
+      pickingShader,
+      0
+    );
+    quat.rotateY(this.planeLeft.transform.localRotation, this.planeLeft.transform.localRotation, - Math.PI / 2);
+    vec3.set(this.planeLeft.transform.localPosition, - this.planeX / 2, 0, 0);
+    this.planeLeft.uniforms.lights = this.lights;
+    this.planeLeft.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.planeLeft.uniforms.mainColor, "#BBBBBB");
+
+    this.planeRight = new cs380.PickableObject(
+      planeRightMesh,
+      blinnPhongShader,
+      pickingShader,
+      0
+    );
+    quat.rotateY(this.planeRight.transform.localRotation, this.planeRight.transform.localRotation, Math.PI / 2);
+    vec3.set(this.planeRight.transform.localPosition, this.planeX / 2, 0, 0);
+    this.planeRight.uniforms.lights = this.lights;
+    this.planeRight.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.planeRight.uniforms.mainColor, "#888888");
+
+    this.planeBottom = new cs380.PickableObject(
+      planeBottomMesh,
+      blinnPhongShader,
+      pickingShader,
+      0
+    );
+    quat.rotateX(this.planeBottom.transform.localRotation, this.planeBottom.transform.localRotation, Math.PI / 2);
+    vec3.set(this.planeBottom.transform.localPosition, 0, - this.planeY / 2, 0);
+    this.planeBottom.uniforms.lights = this.lights;
+    this.planeBottom.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.planeBottom.uniforms.mainColor, "#444444");
+    // Generate Plane End
+  
+  // Generate Object
     // initialize a sphere Object
     this.sphere = new cs380.PickableObject(
       sphereMesh, 
@@ -94,7 +154,7 @@ export default class Assignment3 extends cs380.BaseApp {
       pickingShader,
       1
     );
-    vec3.set(this.sphere.transform.localPosition, -1.2, 0, 0);
+    vec3.set(this.sphere.transform.localPosition, -1.5, 0, 0);
     vec3.set(this.sphere.transform.localScale, 0.7, 0.7, 0.7);
     this.sphere.uniforms.lights = this.lights; 
 
@@ -105,12 +165,13 @@ export default class Assignment3 extends cs380.BaseApp {
       pickingShader,
       2
     );
-    vec3.set(this.bunny.transform.localPosition, 1.2, 0, 0);
+    vec3.set(this.bunny.transform.localPosition, 1.5, 0, 0);
     vec3.set(this.bunny.transform.localScale, 0.7, 0.7, 0.7);
     this.bunny.uniforms.lights = this.lights;
     this.bunny.uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(this.bunny.uniforms.mainColor, "#FF0000");
-   
+  
+  // Event & Inputs
     // Event listener for interactions
     this.handleKeyDown = (e) => {
       // e.repeat is true when the key has been helded for a while
@@ -135,7 +196,7 @@ export default class Assignment3 extends cs380.BaseApp {
       <label for="setting-point">Point Light Illuminance</label>
       <input type="range" min=0 max=10 value=0 step=0.1 id="setting-point-illuminance">
       <label for="setting-point">Point Light X Transform</label>
-      <input type="range" min=-10 max=10 value=0 step=0.1 id="setting-point-x">
+      <input type="range" min=-1 max=5 value=0 step=0.1 id="setting-point-z">
       <br/>
       <label for="setting-spotlight">SpotLight Illuminance</label>
       <input type="range" min=0 max=1 value=0 step=0.01 id="setting-spotlight-illuminance">
@@ -181,10 +242,10 @@ export default class Assignment3 extends cs380.BaseApp {
           console.log("Point Illuminance: " + val);
           this.lights[2].illuminance=val;
         });
-    setInputBehavior('setting-point-x', true, true,
+    setInputBehavior('setting-point-z', true, true,
         (val) => { 
           console.log("Point X: " + val);
-          vec3.set(this.lights[2].pos, val, 0.0, 0.0);
+          vec3.set(this.lights[2].transform.localPosition, 0, 0, val);
         });
     setInputBehavior('setting-spotlight-illuminance', true, true,
         (val) => { 
@@ -194,7 +255,7 @@ export default class Assignment3 extends cs380.BaseApp {
     setInputBehavior('setting-spotlight-x', true, true,
         (val) => { 
           console.log("Spotlight X: " + val);
-          this.lights[3].illuminance=val;
+          vec3.set(this.lights[3].transform.localPosition, 0, 10, val);
         });
 
     // GL settings
@@ -250,6 +311,10 @@ export default class Assignment3 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     // render() here
+    this.planeBack.render(this.camera);
+    this.planeLeft.render(this.camera);
+    this.planeRight.render(this.camera);
+    this.planeBottom.render(this.camera);
     this.sphere.render(this.camera);
     this.bunny.render(this.camera);
   }

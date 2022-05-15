@@ -39,11 +39,6 @@ void main() {
     vec3 intensity = vec3(0.0, 0.0, 0.0);
 
     // World 2 Camera
-    vec4 w_frag_normal = frag_normal * W2C;
-    vec3 frag_normal_vec = normalize(w_frag_normal.xyz);
-    vec4 w_frag_pos = frag_pos * W2C;
-    vec3 frag_pos_vec = w_frag_pos.xyz;
-
     vec4 w_camera_pos= cameraTransform[0];
     vec3 camera_pos_vec = (w_camera_pos * W2C).xyz;
 
@@ -55,8 +50,7 @@ void main() {
         vec3 lightColor = lights[i].rgb;
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
 
-        vec4 w_light_pos = vec4(lights[i].pos[0], lights[i].pos[1], lights[i].pos[2], 0) * W2C;
-        vec3 light_pos = (w_light_pos * W2C).xyz;
+        vec3 light_pos = (W2C * vec4(lights[i].pos, 1.0)).xyz;
 
         // Set this for Reflection
         vec3 light_vec;
@@ -64,19 +58,19 @@ void main() {
 
         if (lights[i].type == DIRECTIONAL) {
             // TODO: implement diffuse and specular reflections for directional light
-            light_vec = normalize(lights[i].dir);
+            light_vec = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
             reflection_intensity = 1.0;
         }
         else if (lights[i].type == POINT) {
-            float dist = distance(light_pos, frag_pos_vec);
+            float dist = distance(light_pos, frag_pos.xyz);
             // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
             float a = 1.0;
-            float b = 0.14;
-            float c = 0.07;
+            float b = 0.7;
+            float c = 1.8;
             
             float Attenuation = 1.0 / (a + b * dist + c * dist * dist);
 
-            light_vec = normalize(frag_pos_vec - light_pos);
+            light_vec = normalize(frag_pos.xyz - light_pos);
             reflection_intensity = Attenuation;
         }
         else if (lights[i].type == SPOTLIGHT) {
@@ -88,14 +82,14 @@ void main() {
             continue;
         }
         //Diffuse
-        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_vec, -light_vec) , 0.0f), 1.0f);
+        intensity += newColor * reflection_intensity * min(max(dot(frag_normal.xyz, -light_vec) , 0.0f), 1.0f);
 
         //Specular
-        vec3 hvec = normalize(camera_pos_vec - frag_pos_vec);
+        //vec3 hvec = normalize(camera_pos_vec - frag_pos_vec);
 
-        vec3 lvec = 2.0 * frag_normal_vec * dot(frag_normal_vec, -light_vec) + light_vec;
+        //vec3 lvec = 2.0 * c_frag_normal * dot(c_frag_normal, -light_vec) + light_vec;
 
-        intensity += newColor * reflection_intensity * max(pow(abs(dot(lvec, hvec)), shinness), 0.0f);
+        //intensity += newColor * reflection_intensity * max(pow(abs(dot(lvec, hvec)), shinness), 0.0f);
     }
     
     output_color = vec4(intensity, 1.0f);
