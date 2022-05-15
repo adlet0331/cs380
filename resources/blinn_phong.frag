@@ -56,7 +56,7 @@ void main() {
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
 
         vec4 w_light_pos = vec4(lights[i].pos[0], lights[i].pos[1], lights[i].pos[2], 0) * W2C;
-        vec3 light_pos = w_light_pos.xyz;
+        vec3 light_pos = (w_light_pos * W2C).xyz;
 
         // Set this for Reflection
         vec3 light_vec;
@@ -95,7 +95,7 @@ void main() {
 
         vec3 lvec = 2.0 * frag_normal_vec * dot(frag_normal_vec, -light_vec) + light_vec;
 
-        intensity += newColor * reflection_intensity * max(pow(max(dot(lvec, hvec), 0.0f), shinness), 0.0f);
+        intensity += newColor * reflection_intensity * max(pow(abs(dot(lvec, hvec)), shinness), 0.0f);
     }
     
     output_color = vec4(intensity, 1.0f);

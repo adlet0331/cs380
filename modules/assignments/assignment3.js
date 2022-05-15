@@ -79,6 +79,7 @@ export default class Assignment3 extends cs380.BaseApp {
     vec3.set(light2.pos, 0.0, 0.0, 0.0);
     light2.type = LightType.POINT;
     this.lights.push(light2);
+    vec3.set(light2.transform.localPosition, 0, 0, -8);
 
     const light3 = new Light();
     light1.transform.lookAt(lightDir);
