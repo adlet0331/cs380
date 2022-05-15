@@ -42,7 +42,7 @@ void main() {
     vec4 w_camera_pos= cameraTransform[0];
     vec3 camera_pos_vec = (w_camera_pos * W2C).xyz;
 
-    float shinness = 30.0f;
+    float shinness = 30.0;
     
     for (int i=0; i<numLights; i++){
         if (!lights[i].enabled) continue;
@@ -81,15 +81,17 @@ void main() {
             intensity += newColor;
             continue;
         }
+        vec3 frag_normal_normalized = normalize(frag_normal.xyz);
+
         //Diffuse
-        intensity += newColor * reflection_intensity * min(max(dot(frag_normal.xyz, -light_vec) , 0.0f), 1.0f);
+        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_normalized, -light_vec) , 0.0), 1.0);
 
         //Specular
-        //vec3 hvec = normalize(camera_pos_vec - frag_pos_vec);
+        vec3 hvec = normalize(camera_pos_vec - frag_pos.xyz);
 
-        //vec3 lvec = 2.0 * c_frag_normal * dot(c_frag_normal, -light_vec) + light_vec;
+        vec3 lvec = 2.0 * frag_normal_normalized * dot(frag_normal_normalized, -light_vec) + light_vec;
 
-        //intensity += newColor * reflection_intensity * max(pow(abs(dot(lvec, hvec)), shinness), 0.0f);
+        intensity += newColor * reflection_intensity * pow(max(dot(lvec, hvec), 0.0), shinness);
     }
     
     output_color = vec4(intensity, 1.0f);
