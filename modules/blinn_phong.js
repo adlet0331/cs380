@@ -11,6 +11,15 @@ export const LightType = {
   AMBIENT: 3,
 };
 
+export class Material {
+  constructor() {
+    this.ambientColor = vec3.create();
+    this.diffuseColor = vec3.create();
+    this.specularColor = vec3.create();
+    this.isToonShading = false;
+  }
+}
+
 export class Light {
   constructor() {
     this.transform = new cs380.Transform();
@@ -68,6 +77,22 @@ export class BlinnPhongShader extends cs380.BaseShader {
 
     // Set shader-specific uniforms here
     this.setUniformVec3(kv, "mainColor", 1, 1, 1);
+
+    // Materials
+    const materialProperties = ['ambientColor', 'diffuseColor', 'specularColor', 'isToonShading'];
+    if ('material' in kv){
+      const material = kv['material'];
+      const getmaterial = materialProperties.reduce(
+        (obj, x) => {
+          obj[x] = gl.getUniformLocation(this.program, `material.${x}`);
+          return obj;
+        }, {}
+      );
+      gl.uniform3f(getmaterial.ambientColor, ...material.ambientColor);
+      gl.uniform3f(getmaterial.diffuseColor, ...material.diffuseColor);
+      gl.uniform3f(getmaterial.specularColor, ...material.specularColor);
+      gl.uniform1i(getmaterial.isToonShading, material.isToonShading);
+    }
 
     if ('lights' in kv) {
       const lights = kv['lights'];

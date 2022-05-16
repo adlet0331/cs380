@@ -15,9 +15,12 @@ uniform mat4 cameraTransform;
 
 uniform vec3 mainColor;
 
-uniform vec3 ambientRGB;
-uniform vec3 diffuseRGB;
-uniform vec3 specularRGB;
+struct Material {
+    vec3 ambientColor;
+    vec3 diffuseColor;
+    vec3 specularColor;
+    bool isToonShading;
+};
 
 struct Light {
     int type;
@@ -32,6 +35,7 @@ struct Light {
 
 uniform int numLights;
 uniform Light lights[10];
+uniform Material material;
 
 float random(vec3 seed) {
     seed = seed + vec3(123.456, 789.123, 456.789);
@@ -43,8 +47,15 @@ void main() {
     vec3 intensity = vec3(0.0, 0.0, 0.0);
 
     // World 2 Camera
-    vec4 w_camera_pos= cameraTransform[0];
-    vec3 camera_pos_vec = (w_camera_pos * W2C).xyz;
+    vec4 w_camera_pos= cameraTransform[3];
+
+    vec3 camera_pos_vec = (W2C * w_camera_pos).xyz;
+
+    vec3 frag_normal_normalized = normalize(frag_normal.xyz);
+    vec3 hvec = normalize(camera_pos_vec - frag_pos.xyz);
+
+    bool isToonShading = material.isToonShading;
+    float toonConst = 6.0;
 
     float shinness = 30.0;
     
@@ -53,6 +64,10 @@ void main() {
 
         vec3 lightColor = lights[i].rgb;
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
+
+        vec3 ambientColor = vec3(newColor[0] * material.ambientColor[0], newColor[1] * material.ambientColor[1], newColor[2] * material.ambientColor[2]);
+        vec3 diffuseColor = vec3(newColor[0] * material.diffuseColor[0], newColor[1] * material.diffuseColor[1], newColor[2] * material.diffuseColor[2]);
+        vec3 specularColor = vec3(newColor[0] * material.specularColor[0], newColor[1] * material.specularColor[1], newColor[2] * material.specularColor[2]);
 
         vec3 light_pos = (W2C * vec4(lights[i].pos, 1.0)).xyz;
         vec3 light_dir = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
@@ -85,25 +100,29 @@ void main() {
 
             light_vec = normalize(frag_pos.xyz - light_pos);
             float radian_frag = acos(dot(light_dir, light_vec));
-            float radian_smooth = (radian_frag - radian_cutoff) / (radian_cutoff - radian_cutoff_out);
-            reflection_intensity = pow(cos(radian_frag), angleSmoothness) * min(1.0, max(0.0, radian_smooth));
+            float radian_smooth =  min(1.0, max(0.0, (radian_cutoff - radian_frag) / (radian_cutoff_out - radian_cutoff)));
+            reflection_intensity = pow(cos(radian_frag), angleSmoothness) * sin(radian_smooth * 1.57);
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
-            intensity += newColor;
+            intensity += ambientColor;
             continue;
         }
-        vec3 frag_normal_normalized = normalize(frag_normal.xyz);
-
-        //Diffuse
-        intensity += newColor * reflection_intensity * min(max(dot(frag_normal_normalized, - light_vec) , 0.0), 1.0);
-
-        //Specular
-        vec3 hvec = normalize(camera_pos_vec - frag_pos.xyz);
-
         vec3 lvec = 2.0 * frag_normal_normalized * dot(frag_normal_normalized, -light_vec) + light_vec;
 
-        intensity += newColor * reflection_intensity * pow(max(dot(lvec, hvec), 0.0), shinness);
+        //Diffuse
+        vec3 diffuseVec = diffuseColor * reflection_intensity * min(max(dot(frag_normal_normalized, - light_vec) , 0.0), 1.0);
+        intensity += diffuseVec;
+
+        //Specular
+        vec3 specularVec = specularColor * reflection_intensity * pow(max(dot(lvec, hvec), 0.0), shinness);    
+        intensity += specularVec;
+    }
+
+    if (isToonShading){
+        intensity *= float(ceil(length(intensity / 1.732) * toonConst)) / toonConst * 1.732;
+        float angle = acos(dot(hvec, frag_normal_normalized));
+        intensity *= (1.0 - max(min(pow(sin(angle), 100.0) * 5.0, 1.0),0.0));
     }
     
     output_color = vec4(intensity, 1.0f);

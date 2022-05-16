@@ -105,7 +105,7 @@ export default class Assignment2 extends cs380.BaseApp {
       quat.rotateX(object.transform.localRotation, object.transform.localRotation, angle);
       vec3.set(object.transform.localPosition, x, y, z);
     }
-
+    
     // Initialize Object Mesh
     const headCubeMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 3, 4));
     const headHairMesh = cs380.Mesh.fromData(cs380.primitives.generateCube(4, 1, 4));
@@ -298,7 +298,6 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.canvas.addEventListener("mousedown", this.handleMouseDown);
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.handleMouseUp);
-    gl.canvas.addEventListener("wheel", this.handleWheel);
 
     document.getElementById("settings").innerHTML = `
       <h3>Basic requirements</h3>
@@ -347,7 +346,6 @@ export default class Assignment2 extends cs380.BaseApp {
     this.Idx2ArcTransform.push(this.rightLegUpjoint.transform);
     this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
 
-
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "jump", "swim"]
     this.currentStatusKey = "default"
@@ -376,9 +374,7 @@ export default class Assignment2 extends cs380.BaseApp {
     this.animationInfoDict = [];
 
     // Construct Animation
-
     const hPi = Math.PI / 2;
-
     // Default
     let defaultData = [];
     let defaultKeyframe1 = [];
@@ -664,7 +660,7 @@ export default class Assignment2 extends cs380.BaseApp {
   }
 
   animationRotate(fromT, toT, ratio){
-    quat.lerp(fromT, fromT, toT, ratio)
+    quat.slerp(fromT, fromT, toT, ratio)
   }
 
   updateAnimation(elapsed){
