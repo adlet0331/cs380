@@ -51,6 +51,7 @@ void main() {
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
 
         vec3 light_pos = (W2C * vec4(lights[i].pos, 1.0)).xyz;
+        vec3 light_dir = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
 
         // Set this for Reflection
         vec3 light_vec;
@@ -58,7 +59,7 @@ void main() {
 
         if (lights[i].type == DIRECTIONAL) {
             // TODO: implement diffuse and specular reflections for directional light
-            light_vec = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
+            light_vec = light_dir;
             reflection_intensity = 1.0;
         }
         else if (lights[i].type == POINT) {
@@ -74,13 +75,14 @@ void main() {
             reflection_intensity = Attenuation;
         }
         else if (lights[i].type == SPOTLIGHT) {
-            vec3 light_direction = normalize((W2C * vec4(lights[i].dir, 0.0)).xyz);
-            float radian = lights[i].angle;
+            float radian_cutoff = lights[i].angle;
+            float radian_cutoff_out = lights[i].angle * 1.5;
             float angleSmoothness = lights[i].angleSmoothness;
 
             light_vec = normalize(frag_pos.xyz - light_pos);
-            float cosval = dot(light_direction, light_vec) / (length(light_direction) * length(light_vec));
-            reflection_intensity = pow(cosval, angleSmoothness);
+            float radian_frag = acos(dot(light_dir, light_vec));
+            float radian_smooth = (radian_frag - radian_cutoff) / (radian_cutoff - radian_cutoff_out);
+            reflection_intensity = pow(cos(radian_frag), angleSmoothness) * min(1.0, max(0.0, radian_smooth));
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
