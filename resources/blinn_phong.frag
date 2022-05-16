@@ -55,12 +55,13 @@ void main() {
     vec3 hvec = normalize(camera_pos_vec - frag_pos.xyz);
 
     bool isToonShading = material.isToonShading;
-    float toonConst = 6.0;
+    float toonConst = 3.0;
 
     float shinness = 30.0;
     
     for (int i=0; i<numLights; i++){
         if (!lights[i].enabled) continue;
+        if (lights[i].illuminance == 0.0) continue;
 
         vec3 lightColor = lights[i].rgb;
         vec3 newColor = vec3(mainColor[0] * lightColor[0], mainColor[1] * lightColor[1], mainColor[2] * lightColor[2]) * lights[i].illuminance;
@@ -111,7 +112,7 @@ void main() {
         vec3 lvec = 2.0 * frag_normal_normalized * dot(frag_normal_normalized, -light_vec) + light_vec;
 
         //Diffuse
-        vec3 diffuseVec = diffuseColor * reflection_intensity * min(max(dot(frag_normal_normalized, - light_vec) , 0.0), 1.0);
+        vec3 diffuseVec = diffuseColor * reflection_intensity * clamp(dot(frag_normal_normalized, - light_vec) , 0.0, 1.0);
         intensity += diffuseVec;
 
         //Specular
@@ -120,9 +121,9 @@ void main() {
     }
 
     if (isToonShading){
-        intensity *= float(ceil(length(intensity / 1.732) * toonConst)) / toonConst * 1.732;
+        intensity *= float(ceil(length(intensity / 1.732) * toonConst+ 1.0)) / toonConst * 1.732;
         float angle = acos(dot(hvec, frag_normal_normalized));
-        intensity *= (1.0 - max(min(pow(sin(angle), 100.0) * 5.0, 1.0),0.0));
+        intensity = vec3(1.0, 1.0, 1.0) * (1.0 - clamp(pow(sin(angle), 300.0) * 5.0, 1.0, 0.0));
     }
     
     output_color = vec4(intensity, 1.0f);
