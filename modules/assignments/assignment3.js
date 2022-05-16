@@ -14,7 +14,7 @@ export default class Assignment3 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 20);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 40);
     mat4.perspective(
       this.camera.projectionMatrix,
       glMatrix.toRadian(45),
@@ -47,7 +47,12 @@ export default class Assignment3 extends cs380.BaseApp {
     const meshLoaderResult = await cs380.MeshLoader.load({
       bunny: "resources/models/bunny.obj",
     });
-    const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny)
+    const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny);
+
+    const lighthouseLoaderResult = await cs380.MeshLoader.load({
+      lighthouse: "resources/models/Round_Lighthouse.obj"
+    });
+    const lighthouseMesh = cs380.Mesh.fromData(lighthouseLoaderResult.lighthouse);
 
     const simpleShader = await cs380.buildShader(SimpleShader);
     // TODO: import BlinnPhongShader
@@ -55,6 +60,7 @@ export default class Assignment3 extends cs380.BaseApp {
 
     this.thingsToClear.push(sphereMesh);
     this.thingsToClear.push(bunnyMesh);
+    this.thingsToClear.push(lighthouseMesh);
     this.thingsToClear.push(simpleShader);
     this.thingsToClear.push(blinnPhongShader);
   
@@ -72,12 +78,13 @@ export default class Assignment3 extends cs380.BaseApp {
     const lightDir = vec3.create();
     vec3.set(lightDir, -1, -1, -1);
     light1.transform.lookAt(lightDir);
-    vec3.set(light1.rgb, 1.0, 1.0, 0.0);
+    cs380.utils.hexToRGB(light1.rgb, "#FFCC33");
+    //vec3.set(light1.rgb, 1.0, 1.0, 0.0);
     light1.type = LightType.DIRECTIONAL;
     this.lights.push(light1);
 
     const light2 = new Light();
-    vec3.set(light2.rgb, 1.0, 1.0, 1.0);
+    cs380.utils.hexToRGB(light2.rgb, "#FFFFFF");
     light2.type = LightType.POINT;
     this.lights.push(light2);
 
@@ -90,9 +97,9 @@ export default class Assignment3 extends cs380.BaseApp {
     this.lights.push(light3);
 
   // Generate Plane
-    this.planeX = 10
+    this.planeX = 20
     this.planeY = 2
-    this.planeZ = 10
+    this.planeZ = 20
     const planeBackMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
     const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
     const planeRightMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
@@ -171,6 +178,19 @@ export default class Assignment3 extends cs380.BaseApp {
     this.bunny.uniforms.lights = this.lights;
     this.bunny.uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(this.bunny.uniforms.mainColor, "#FF0000");
+
+    this.lighthouse = new cs380.PickableObject(
+      lighthouseMesh,
+      blinnPhongShader,
+      pickingShader,
+      3
+    );
+    this.lighthouse.uniforms.mainColor = vec3.create();
+    cs380.utils.hexToRGB(this.lighthouse.uniforms.mainColor, "#362B00");
+    vec3.set(this.lighthouse.transform.localPosition, 8.0, -1.0, 0.0);
+    this.lighthouse.uniforms.lights = this.lights;
+    vec3.set(this.lighthouse.transform.localScale, 0.003, 0.003, 0.003);
+    quat.rotateX(this.lighthouse.transform.localRotation, this.lighthouse.transform.localRotation, -Math.PI / 2);
   
   // Event & Inputs
     // Event listener for interactions
@@ -317,6 +337,7 @@ export default class Assignment3 extends cs380.BaseApp {
     // renderPicking() here
     this.sphere.renderPicking(this.camera);
     this.bunny.renderPicking(this.camera);
+    this.lighthouse.renderPicking(this.camera);
     
     // Render real scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -333,5 +354,6 @@ export default class Assignment3 extends cs380.BaseApp {
     this.planeBottom.render(this.camera);
     this.sphere.render(this.camera);
     this.bunny.render(this.camera);
+    this.lighthouse.render(this.camera);
   }
 }

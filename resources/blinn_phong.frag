@@ -15,6 +15,10 @@ uniform mat4 cameraTransform;
 
 uniform vec3 mainColor;
 
+uniform vec3 ambientRGB;
+uniform vec3 diffuseRGB;
+uniform vec3 specularRGB;
+
 struct Light {
     int type;
     bool enabled;
