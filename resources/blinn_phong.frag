@@ -95,14 +95,15 @@ void main() {
             reflection_intensity = Attenuation;
         }
         else if (lights[i].type == SPOTLIGHT) {
+            if (lights[i].angle == 0.0) continue;
             float radian_cutoff = lights[i].angle;
             float radian_cutoff_out = lights[i].angle * 1.5;
             float angleSmoothness = lights[i].angleSmoothness;
 
             light_vec = normalize(frag_pos.xyz - light_pos);
             float radian_frag = acos(dot(light_dir, light_vec));
-            float radian_smooth =  min(1.0, max(0.0, (radian_cutoff - radian_frag) / (radian_cutoff_out - radian_cutoff)));
-            reflection_intensity = pow(cos(radian_frag), angleSmoothness) * sin(radian_smooth * 1.57);
+            float radian_smooth =  clamp((radian_cutoff - radian_frag) / (radian_cutoff_out - radian_cutoff), 0.0, 1.0) - 0.5;
+            reflection_intensity = pow(max(0.0, cos(radian_frag)), angleSmoothness) * max(0.0, sin(radians(radian_smooth * 180.0)));
         }
         else if (lights[i].type == AMBIENT) {
             // TODO: implement ambient reflection
@@ -121,9 +122,9 @@ void main() {
     }
 
     if (isToonShading){
-        intensity *= float(ceil(length(intensity / 1.732) * toonConst+ 1.0)) / toonConst * 1.732;
+        intensity *= float(ceil(length(intensity) * toonConst)) / toonConst;
         float angle = acos(dot(hvec, frag_normal_normalized));
-        intensity = vec3(1.0, 1.0, 1.0) * (1.0 - clamp(pow(sin(angle), 300.0) * 5.0, 1.0, 0.0));
+        intensity *= (1.0 - clamp(pow(max(sin(angle), 0.0), 300.0) * 5.0, 0.0, 1.0));
     }
     
     output_color = vec4(intensity, 1.0f);

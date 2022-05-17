@@ -39,6 +39,10 @@ export default class Assignment3 extends cs380.BaseApp {
   }
 
   async buildModels() {
+    const meshLoaderResult = await cs380.MeshLoader.load({
+      bunny: "resources/models/bunny.obj",
+    });
+    const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny);
     const lighthouseLoaderResult = await cs380.MeshLoader.load({
       lighthouse: "resources/models/Round_Lighthouse.obj"
     });
@@ -48,6 +52,7 @@ export default class Assignment3 extends cs380.BaseApp {
     // TODO: import BlinnPhongShader
     const blinnPhongShader = await cs380.buildShader(BlinnPhongShader);
 
+    this.thingsToClear.push(bunnyMesh);
     this.thingsToClear.push(lighthouseMesh);
     this.thingsToClear.push(simpleShader);
     this.thingsToClear.push(blinnPhongShader);
@@ -89,41 +94,41 @@ export default class Assignment3 extends cs380.BaseApp {
     this.lights.push(spotLight);
 
     const lightHouseLight = new Light();
-    vec3.set(lightHouseLight.transform.localPosition, this.planeX / 2 - 5, this.planeY / 2 - 10, 0);
+    vec3.set(lightHouseLight.transform.localPosition, this.planeX / 2, -3, 2.5);
     const lightHouseDir = vec3.create();
-    vec3.set(lightHouseDir, -1, -1, 0);
+    vec3.set(lightHouseDir, -1, -0.3, 0);
     vec3.set(lightHouseLight.rgb, 1.0, 1.0, 1.0);
     lightHouseLight.transform.lookAt(lightHouseDir);
     lightHouseLight.type = LightType.SPOTLIGHT;
-    lightHouseLight.angle = Math.PI / 12;
-    this.lights.push(lightHouseLight);
+    lightHouseLight.angle = Math.PI / 6;
+    //this.lights.push(lightHouseLight);
 
     const light4 = new Light();
     vec3.set(light4.transform.localPosition, -10, 0, 0);
     const lightDir3 = vec3.create();
-    vec3.set(lightDir3, 0, -1, -0.3);
+    vec3.set(lightDir3, 0, -1, -0.01);
     light4.transform.lookAt(lightDir3);
     vec3.set(light4.rgb, 1.0, 0.0, 0.0);
     light4.type = LightType.SPOTLIGHT;
-    this.lights.push(light4);
+    //this.lights.push(light4);
 
     const light5 = new Light();
     vec3.set(light5.transform.localPosition, 0, 0, 7.3);
     const lightDir4 = vec3.create();
-    vec3.set(lightDir4, 0, -1, -0.3);
+    vec3.set(lightDir4, 0, -1, -0.01);
     light5.transform.lookAt(lightDir4);
     vec3.set(light5.rgb, 0.0, 1.0, 0.0);
     light5.type = LightType.SPOTLIGHT;
-    this.lights.push(light5);
+    //this.lights.push(light5);
 
     const light6 = new Light();
     vec3.set(light6.transform.localPosition, 0, 0, -7.3);
     const lightDir5 = vec3.create();
-    vec3.set(lightDir5, 0, -1, -0.3);
+    vec3.set(lightDir5, 0, -1, -0.01);
     light6.transform.lookAt(lightDir5);
     vec3.set(light6.rgb, 0.0, 0.0, 1.0);
     light6.type = LightType.SPOTLIGHT;
-    this.lights.push(light6);
+    //this.lights.push(light6);
 
 
   // Generate Plane
@@ -145,6 +150,10 @@ export default class Assignment3 extends cs380.BaseApp {
     // Generate Plane End
   
     // Generate Object
+    this.bunny = await this.generateMesh(bunnyMesh, "#FFFF00", 0, null, blinnPhongShader, this.lights);
+    vec3.set(this.bunny.transform.localPosition, 0.0, -this.planeY / 2 + 10, 0.0);
+    vec3.set(this.bunny.transform.localScale, 5, 5, 5);
+
     this.lighthouse = await this.generateMesh(lighthouseMesh, "#362B00", 0, null, blinnPhongShader, this.lights);
     vec3.set(this.lighthouse.transform.localPosition, 25.0, -this.planeY / 2, 0.0);
     vec3.set(this.lighthouse.transform.localScale, 0.02, 0.02, 0.02);
@@ -346,11 +355,12 @@ export default class Assignment3 extends cs380.BaseApp {
     this.pickingBuffer = new cs380.PickingBuffer();
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
-
+    
+    // Build Scene Models
     await this.buildModels();
 
     // SimpleOrbitControl && Toon Shading
-    const orbitControlCenter = vec3.fromValues(0, 0, 0);
+    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
     this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
       this.camera,
       orbitControlCenter
@@ -386,7 +396,7 @@ export default class Assignment3 extends cs380.BaseApp {
       <label for="setting-point">Point Light Illuminance</label>
       <input type="range" min=0 max=500 value=0 step=1 id="setting-point-illuminance">
       <label for="setting-point">Point Light Z Transform</label>
-      <input type="range" min=-1 max=5 value=0 step=0.1 id="setting-point-z">
+      <input type="range" min=-20 max=20 value=0 step=1 id="setting-point-z">
       <br/>
       <label for="setting-spotlight">SpotLight Illuminance</label>
       <input type="range" min=0 max=1 value=0 step=0.01 id="setting-spotlight-illuminance">
