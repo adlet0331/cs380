@@ -149,6 +149,8 @@ export default class Assignment3 extends cs380.BaseApp {
     vec3.set(lightHouseLight.rgb, 1.0, 1.0, 1.0);
     lightHouseLight.type = LightType.SPOTLIGHT;
     this.lights.push(lightHouseLight);
+    this.lightHouseLightInitRotation = new quat.create();
+    quat.copy(this.lightHouseLightInitRotation, lightHouseLight.transform.localRotation);
 
     const light4 = new Light();
     vec3.set(light4.transform.localPosition, -10, 0, 0);
@@ -157,7 +159,7 @@ export default class Assignment3 extends cs380.BaseApp {
     light4.transform.lookAt(lightDir3);
     vec3.set(light4.rgb, 1.0, 0.0, 0.0);
     light4.type = LightType.SPOTLIGHT;
-    //this.lights.push(light4);
+    this.lights.push(light4);
 
     const light5 = new Light();
     vec3.set(light5.transform.localPosition, 0, 0, 7.3);
@@ -166,7 +168,7 @@ export default class Assignment3 extends cs380.BaseApp {
     light5.transform.lookAt(lightDir4);
     vec3.set(light5.rgb, 0.0, 1.0, 0.0);
     light5.type = LightType.SPOTLIGHT;
-    //this.lights.push(light5);
+    this.lights.push(light5);
 
     const light6 = new Light();
     vec3.set(light6.transform.localPosition, 0, 0, -7.3);
@@ -175,7 +177,7 @@ export default class Assignment3 extends cs380.BaseApp {
     light6.transform.lookAt(lightDir5);
     vec3.set(light6.rgb, 0.0, 0.0, 1.0);
     light6.type = LightType.SPOTLIGHT;
-    //this.lights.push(light6);
+    this.lights.push(light6);
 
 
   // Generate Plane
@@ -197,7 +199,7 @@ export default class Assignment3 extends cs380.BaseApp {
     // Generate Plane End
   
     // Generate Object
-    this.bunny = await this.generateMesh(bunnyMesh, "#FFFF00", 0, null, blinnPhongShader, this.lights);
+    this.bunny = await this.generateMesh(bunnyMesh, "#FFFF00", 0, null, blinnPhongShader, this.lights, ["FF0000", "00FF00", "00FF00"]);
     vec3.set(this.bunny.transform.localPosition, -20, -this.planeY / 2 + 10, 0.0);
     vec3.set(this.bunny.transform.localScale, 5, 5, 5);
 
@@ -403,6 +405,8 @@ export default class Assignment3 extends cs380.BaseApp {
       <br/>
       <label for="setting-spotlight-smooth">SpotLight smooth</label>
       <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
+      <label for="setting-spotlight-rotate">SpotLight Rotate</label>
+      <input type="range" min=-1.57 max=1.57 value=0 step=0.01 id="setting-spotlight-rotate">
       <h3>Basic requirements</h3>
       <ul>
         <li>Implement point light, and spotlight [2 pts]</li>
@@ -462,6 +466,11 @@ export default class Assignment3 extends cs380.BaseApp {
         (val) => { 
           console.log("Spotlight angle: " + val);
           this.lights[3].angle = val;
+        });
+    setInputBehavior("setting-spotlight-rotate", true, true, 
+        (val) => { 
+          console.log("Spotlight Rotate: " + val);
+          quat.rotateY(this.lights[3].transform.localRotation, this.lightHouseLightInitRotation, val); 
         });
     setInputBehavior("toon-shading", true, false, 
         () => { 
@@ -911,6 +920,7 @@ export default class Assignment3 extends cs380.BaseApp {
     //vec3.set(this.camera.transform.localPosition, this.SelectedObject.localPosition[0], this.SelectedObject.localPosition[1], 100)
   }
   onMouseMove(e) {
+    if (this.SelectedObjIdx == -1) return;
     const canvas = gl.canvas;
     if (!this.Mousepressed) return;
     const rect = canvas.getBoundingClientRect();
@@ -922,6 +932,7 @@ export default class Assignment3 extends cs380.BaseApp {
     this.arcBallUpdate()
   }
   onMouseUp(e) {
+    if (this.SelectedObjIdx == -1) return;
     this.Mousepressed = false;
 
     this.firstClicking = false;
@@ -1024,7 +1035,7 @@ export default class Assignment3 extends cs380.BaseApp {
       if (currentMoveRatio > 0.8){
         currentMoveRatio = 1
       }
-      this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
+      //this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
       this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
       this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
       this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
@@ -1057,7 +1068,7 @@ export default class Assignment3 extends cs380.BaseApp {
     if (currentMoveRatio > 0.8){
       currentMoveRatio = 1
     }
-    this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
+    //this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
     this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
     this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
     this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
