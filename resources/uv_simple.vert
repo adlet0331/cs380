@@ -4,7 +4,7 @@ layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 
 //TODO: layout for uv iput
-
+layout(location = 2) in vec2 in_uv;
 
 out vec4 frag_pos;
 out vec4 frag_normal;
@@ -30,7 +30,8 @@ void main() {
 	frag_pos = MVM * vec4(in_pos, 1);
 	frag_normal = NVM * vec4(in_normal, 0);
 
-  // TODO: set texCoord to deliver uv value to frag shader
+  	// TODO: set texCoord to deliver uv value to frag shader
+  	texCoord = in_uv;
 
 	gl_Position = projectionMatrix * frag_pos;
 }

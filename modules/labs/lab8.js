@@ -94,6 +94,9 @@ export default class Lab8App extends cs380.BaseApp {
     skyboxShader.initialize(shaderLoaderResult.skyboxShader);
 
 
+    const meshLoaderResult = await cs380.MeshLoader.load({
+      bunny: "resources/models/bunny.obj",
+    });
     const cubeMeshData = cs380.primitives.generateCube();
     const skyboxMesh = cs380.Mesh.fromData(cubeMeshData);
 
@@ -119,6 +122,12 @@ export default class Lab8App extends cs380.BaseApp {
     vec3.set(this.cube.transform.localPosition, 0, 0, 0);
 
     // TODO: create 'RenderObejct this.bunny' with 'textureShader and 'uvCheckerTexture' tecture.
+    const bunnyMesh = cs380.Mesh.fromData(meshLoaderResult.bunny);
+    this.thingsToClear.push(bunnyMesh);
+    this.bunny = new cs380.RenderObject(bunnyMesh, textureShader);
+    this.bunny.uniforms.mainTexture = uvCheckerTexture.id;
+    vec3.set(this.bunny.transform.localPosition, -2, 0, 0);
+    vec3.set(this.bunny.transform.localScale, 0.5, 0.5, 0.5);
 
   }
 
@@ -145,6 +154,6 @@ export default class Lab8App extends cs380.BaseApp {
     this.cube.render(this.camera);
 
     //TODO: render this.bunny here
-
+    this.bunny.render(this.camera);
   }
 }
