@@ -15,7 +15,6 @@ export default class Assignment3 extends cs380.BaseApp {
       this.objectList[i].uniforms. material.isToonShading = this.isToonShading;
     }
   }
-
   setUniforms = (uniforms, ambientC = "#FFFFFF", diffuseC = "#FFFFFF", specularC = "#FFFFFF", mainC = "#FFFFFF") => {
     uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(uniforms.mainColor, mainC);
@@ -26,7 +25,65 @@ export default class Assignment3 extends cs380.BaseApp {
     material.isToonShading = this.isToonShading;
     uniforms.material = material;
   }
+  animationMove(fromvect, tovect , ratio){
+    let x = fromvect[0] + (tovect[0] -  fromvect[0]) * ratio;
+    let y = fromvect[1] + (tovect[1] -  fromvect[1]) * ratio;
+    let z = fromvect[2] + (tovect[2] -  fromvect[2]) * ratio;
+    
+    vec3.set(fromvect, x, y, z);
+  }
+  animationRotate(fromT, toT, ratio){
+    quat.slerp(fromT, fromT, toT, ratio)
+  }
+  createAnimation = (keyString, animationData, totalT, waitT, retT, ratioList) => {
+    let dict = [];
+    dict["num"] = animationData.length;
+    console.log("Animation keyframe len: " + dict["num"]);
+    dict["animationTime"] = totalT;
+    dict["waitTime"] = waitT;
+    dict["returnTime"] = retT;
+    dict["keyFrameRatioList"] = ratioList;
 
+    let datalist = [];
+    for(let i = 0; i < animationData.length; i++){
+      let data = [];
+      data["cameraT"] = vec3.clone(animationData[i]["cameraT"]);
+      data["bodyT"] = vec3.clone(animationData[i]["bodyT"]);
+      data["bodyR"] = quat.clone(animationData[i]["bodyR"]);
+      data["head"] = quat.clone(animationData[i]["head"]);
+      data["armL1"] = quat.clone(animationData[i]["armL1"]);
+      data["armL2"] = quat.clone(animationData[i]["armL2"]);
+      data["armR1"] = quat.clone(animationData[i]["armR1"]);
+      data["armR2"] = quat.clone(animationData[i]["armR2"]);
+      data["legL1"] = quat.clone(animationData[i]["legL1"]);
+      data["legL2"] = quat.clone(animationData[i]["legL2"]);
+      data["legR1"] = quat.clone(animationData[i]["legR1"]);
+      data["legR2"] = quat.clone(animationData[i]["legR2"]);
+      datalist.push(data);
+    }
+
+    dict["dataList"] = datalist;
+    this.animationInfoDict[keyString] = dict;
+  }
+  archieveCurrentFrame = (animStatus) => {
+    let customData = [];
+    let data = [];
+    data["cameraT"] = vec3.clone(this.camera.transform.localPosition);
+    data["bodyT"] = vec3.clone(this.bodyjoint.localPosition);
+    data["bodyR"] = quat.clone(this.bodyjoint.localRotation);
+    data["head"] = quat.clone(this.headjoint.localRotation);
+    data["armL1"] = quat.clone(this.leftArmjoint.localRotation);
+    data["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
+    data["armR1"] = quat.clone(this.rightArmjoint.localRotation);
+    data["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
+    data["legL1"] = quat.clone(this.leftLegUpjoint.transform.localRotation);
+    data["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
+    data["legR1"] = quat.clone(this.rightLegUpjoint.transform.localRotation);
+    data["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
+    customData.push(data);
+    let customFrameList = [1];
+    this.createAnimation(animStatus, customData, 1, 0.5, 0.5, customFrameList);
+  }
   async generateMesh (mesh, color, index, parent = null, shader, lights, materials = ["#FFFFFF", "#FFFFFF", "#FFFFFF"]) {
     let object = new cs380.PickableObject(mesh, shader, this.pickingShader, index);
     this.setUniforms(object.uniforms, materials[0], materials[1], materials[2], color);
@@ -37,7 +94,6 @@ export default class Assignment3 extends cs380.BaseApp {
     this.objectList.push(object);
     return object
   }
-
   async buildModels() {
     const meshLoaderResult = await cs380.MeshLoader.load({
       bunny: "resources/models/bunny.obj",
@@ -85,23 +141,14 @@ export default class Assignment3 extends cs380.BaseApp {
     pointLight.type = LightType.POINT;
     this.lights.push(pointLight);
 
-    const spotLight = new Light();
-    const lightDir2 = vec3.create();
-    vec3.set(lightDir2, 0, -1, -0.3);
-    spotLight.transform.lookAt(lightDir2);
-    vec3.set(spotLight.rgb, 1.0, 1.0, 1.0);
-    spotLight.type = LightType.SPOTLIGHT;
-    this.lights.push(spotLight);
-
     const lightHouseLight = new Light();
-    vec3.set(lightHouseLight.transform.localPosition, this.planeX / 2, -3, 2.5);
+    vec3.set(lightHouseLight.transform.localPosition, this.planeX / 2 - 2, -2, 2.5);
     const lightHouseDir = vec3.create();
-    vec3.set(lightHouseDir, -1, -0.3, 0);
-    vec3.set(lightHouseLight.rgb, 1.0, 1.0, 1.0);
+    vec3.set(lightHouseDir, -1, -1, -0.001);
     lightHouseLight.transform.lookAt(lightHouseDir);
+    vec3.set(lightHouseLight.rgb, 1.0, 1.0, 1.0);
     lightHouseLight.type = LightType.SPOTLIGHT;
-    lightHouseLight.angle = Math.PI / 6;
-    //this.lights.push(lightHouseLight);
+    this.lights.push(lightHouseLight);
 
     const light4 = new Light();
     vec3.set(light4.transform.localPosition, -10, 0, 0);
@@ -151,7 +198,7 @@ export default class Assignment3 extends cs380.BaseApp {
   
     // Generate Object
     this.bunny = await this.generateMesh(bunnyMesh, "#FFFF00", 0, null, blinnPhongShader, this.lights);
-    vec3.set(this.bunny.transform.localPosition, 0.0, -this.planeY / 2 + 10, 0.0);
+    vec3.set(this.bunny.transform.localPosition, -20, -this.planeY / 2 + 10, 0.0);
     vec3.set(this.bunny.transform.localScale, 5, 5, 5);
 
     this.lighthouse = await this.generateMesh(lighthouseMesh, "#362B00", 0, null, blinnPhongShader, this.lights);
@@ -209,8 +256,7 @@ export default class Assignment3 extends cs380.BaseApp {
     // Body
     this.bodyjoint = new Transform();
     this.bodyjoint.setParent(null);
-    vec3.set(this.bodyjoint.localPosition, -20, -this.planeY / 2 + 10, 0);
-    quat.rotateY(this.bodyjoint.localRotation, this.bodyjoint.localRotation, Math.PI / 4);
+    vec3.set(this.bodyjoint.localPosition, 0, -this.planeY / 2 + 10, 10);
     this.bodyCube = await this.generateMesh(bodyCubeMesh, this.clothcolor, 2, this.bodyjoint, blinnPhongShader, this.lights);
     vec3.set(this.bodyCube.transform.localPosition, 0, 0, 0);
     this.bodyDownCube = await this.generateMesh(bodyDownCubeMesh, this.pantcolor, 2, this.bodyCube.transform, blinnPhongShader, this.lights);
@@ -333,57 +379,9 @@ export default class Assignment3 extends cs380.BaseApp {
 
     // ArcBall Cube
     this.ArcBallAttatchedCube = await this.generateMesh(arcBallCube , "#FF0000", 7, null, blinnPhongShader, this.lights);
-    vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, 0, 0)
+    vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, -this.planeY / 2 + 10, 10)
   }
-
-  async initialize() {
-    // Basic setup for camera
-    const { width, height } = gl.canvas.getBoundingClientRect();
-    const aspectRatio = width / height;
-    this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 100);
-    mat4.perspective(
-      this.camera.projectionMatrix,
-      glMatrix.toRadian(45),
-      aspectRatio,
-      0.1,
-      1000
-    );
-    this.thingsToClear = [];
-    // initialize picking shader & buffer
-    this.pickingShader = await cs380.buildShader(cs380.PickingShader);
-    this.pickingBuffer = new cs380.PickingBuffer();
-    this.pickingBuffer.initialize(width, height);
-    this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
-    
-    // Build Scene Models
-    await this.buildModels();
-
-    // SimpleOrbitControl && Toon Shading
-    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
-    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
-      this.camera,
-      orbitControlCenter
-    );
-    this.thingsToClear.push(this.simpleOrbitControl);
-    this.isToonShading = true;
-  
-    // Event & Inputs
-    // Event listener for interactions
-    this.handleKeyDown = (e) => {
-      // e.repeat is true when the key has been helded for a while
-      if (e.repeat) return;
-      this.onKeyDown(e.key);
-    };
-    this.handleMouseDown = (e) => {
-      // e.button = 0 if it is left mouse button
-      if (e.button !== 0) return;
-      this.onMouseDown(e);
-    };
-
-    document.addEventListener("keydown", this.handleKeyDown);
-    gl.canvas.addEventListener("mousedown", this.handleMouseDown);
-
+  async constructHTML(){
     document.getElementById("settings").innerHTML = `
       <label for="toon-shading">Toon Shading</label>
       <input type="checkbox" id="toon-shading">
@@ -400,13 +398,11 @@ export default class Assignment3 extends cs380.BaseApp {
       <br/>
       <label for="setting-spotlight">SpotLight Illuminance</label>
       <input type="range" min=0 max=1 value=0 step=0.01 id="setting-spotlight-illuminance">
-      <label for="setting-spotlight">SpotLight X Transform</label>
-      <input type="range" min=-5 max=5 value=0 step=0.01 id="setting-spotlight-x">
-      <br/>
-      <label for="setting-spotlight-smooth">SpotLight smooth</label>
-      <input type="range" min=0 max=10 value=0 step=0.01 id="setting-spotlight-smooth">
       <label for="setting-spotlight-angle">SpotLight Angle</label>
       <input type="range" min=0 max=1.57 value=0 step=0.01 id="setting-spotlight-angle">
+      <br/>
+      <label for="setting-spotlight-smooth">SpotLight smooth</label>
+      <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
       <h3>Basic requirements</h3>
       <ul>
         <li>Implement point light, and spotlight [2 pts]</li>
@@ -457,11 +453,6 @@ export default class Assignment3 extends cs380.BaseApp {
           console.log("Spotlight Illuminance: " + val);
           this.lights[3].illuminance=val;
         });
-    setInputBehavior('setting-spotlight-x', true, true,
-        (val) => { 
-          console.log("Spotlight X: " + val);
-          vec3.set(this.lights[3].transform.localPosition, val, 10, 0);
-        });
     setInputBehavior("setting-spotlight-smooth", true, true, 
         (val) => { 
           console.log("Spotlight Smooth: " + val);
@@ -472,43 +463,644 @@ export default class Assignment3 extends cs380.BaseApp {
           console.log("Spotlight angle: " + val);
           this.lights[3].angle = val;
         });
-    setInputBehavior("toon-shading", true, true, 
+    setInputBehavior("toon-shading", true, false, 
         () => { 
           this.isToonShading = !this.isToonShading;
           this.updateUniforms();
           console.log("Toon Shading: " + this.isToonShading);
         });
+  }
+  async handleSceneInput(){
+    // Implement ArcBall per Picking Objects
+    this.prevMouseX = 0;
+    this.prevMouseY = 0;
+    this.currMouseX = 0;
+    this.currMouseY = 0;
+
+    this.Mousepressed = false;
+    this.arcBallDir = vec3.fromValues(0, 1, 0);
+    this.arcBallUp = vec3.fromValues(0, 1, 0);
+
+    this.arcBallRadius = 0
+    this.arcBallAltitude = Math.PI / 2
+    this.arcBallAzimuth = Math.PI / 2
+
+    // arcBallDict
+    this.SelectedObjIdx = -1
+    this.SelectedObject = this.bodyjoint;
+
+    this.firstClicking = true;
+
+    this.Idx2ArcTransform = []
+    //this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.headjoint);
+    this.Idx2ArcTransform.push(this.bodyjoint);
+    this.Idx2ArcTransform.push(this.leftArmjoint);
+    this.Idx2ArcTransform.push(this.rightArmjoint);
+    this.Idx2ArcTransform.push(this.leftLegUpjoint.transform);
+    this.Idx2ArcTransform.push(this.rightLegUpjoint.transform);
+    this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
+
+    // Animation Status Handling 
+    this.animationStatusList = ["default", "walk", "sit", "hit", "jump", "swim"]
+    this.currentStatusKey = "default"
+    this.animationStartTime = 0
+    this.animationKeyframeIndex = 0
+    this.isAnimationRunning = false
+    this.firstInput = false
+    this.isPressing = false
+    this.pressingTime = 0
+    this.startTransformationArchieve;
+
+    // Input per Animation Dictionary
+    this.status2BindedList = []
+    this.keyBindNum = 6
+    this.status2BindedList["default"] = ["d"]
+    this.status2BindedList["sit"] = ["s"]
+    this.status2BindedList["walk"] = ["w"]
+    this.status2BindedList["hit"] = ["a"]
+    this.status2BindedList["jump"] = [" "]
+    this.status2BindedList["swim"] = ["e"]
+    // Scene Input handling
+    this.handleKeyDown = (e) => {
+      if (e.repeat) return;
+      this.onKeyDown(e.key);
+    };
+    this.handleKeyUp = (e) => {
+      if (e.repeat) return;
+      this.onKeyUp(e.key);
+    }
+    this.handleMouseDown = (e) => {
+      if (e.button !== 0) return;
+      this.onMouseDown(e);
+    };
+    this.handleMouseMove = (e) => {
+      if (e.button !== 0) return;
+      if (!this.Mousepressed) return;
+      this.onMouseMove(e);
+    }
+    this.handleMouseUp = (e) => {
+      if (e.button !== 0) return;
+      this.onMouseUp(e);
+    }
+    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keyup", this.handleKeyUp);
+    gl.canvas.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+  }
+  async constructAnimation(){
+    // Custom Animation Input
+    this.CustomInput = false;
+
+    // Input per Animation Dictionary
+    this.status2BindedList = []
+    this.keyBindNum = 6
+    this.status2BindedList["default"] = ["d"]
+    this.status2BindedList["sit"] = ["s"]
+    this.status2BindedList["walk"] = ["w"]
+    this.status2BindedList["hit"] = ["a"]
+    this.status2BindedList["jump"] = [" "]
+    this.status2BindedList["swim"] = ["e"]
+
+    // Animation infos
+    this.animationInfoDict = [];
+
+    // Construct Animation
+    const hPi = Math.PI / 2;
+    // Default
+    let defaultData = [];
+    let defaultKeyframe1 = [];
+    defaultKeyframe1["cameraT"] = vec3.fromValues(0, 0, 60);
+    defaultKeyframe1["bodyT"] = vec3.clone(this.bodyjoint.localPosition);
+    defaultKeyframe1["bodyR"] = quat.clone(this.bodyjoint.localRotation);
+    defaultKeyframe1["head"] = quat.clone(this.headjoint.localRotation);
+    defaultKeyframe1["armL1"] = quat.clone(this.leftArmjoint.localRotation);
+    defaultKeyframe1["armL2"] = quat.clone(this.leftArmMidjoint.localRotation);
+    defaultKeyframe1["armR1"] = quat.clone(this.rightArmjoint.localRotation);
+    defaultKeyframe1["armR2"] = quat.clone(this.rightArmMidjoint.localRotation);
+    defaultKeyframe1["legL1"] = quat.clone(this.leftLegUpjoint.transform.localRotation);
+    defaultKeyframe1["legL2"] = quat.clone(this.leftLegMidjoint.localRotation);
+    defaultKeyframe1["legR1"] = quat.clone(this.rightLegUpjoint.transform.localRotation);
+    defaultKeyframe1["legR2"] = quat.clone(this.rightLegMidjoint.localRotation);
+    defaultKeyframe1["timeRatio"] = 1;
+    defaultData.push(defaultKeyframe1);
+    let defaultRatioList = [1]
+    this.createAnimation("default", defaultData, 1, 1, 0, defaultRatioList);
+
+    // Walk
+    let walkData = [];
+    let walkKeyframe1 = [];
+    walkKeyframe1["cameraT"] = new vec3.fromValues(0.5, 1, 60);
+    walkKeyframe1["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 0 + this.bodyjoint.localPosition[2]);
+    console.log(this.bodyjoint.localPosition);
+    console.log(walkKeyframe1["bodyT"]);
+    walkKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe1["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe1["armL2"] = quat.fromEuler(new quat.create(), -10, 0, 0);
+    walkKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    walkKeyframe1["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe1["legL1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    walkKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    walkKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -70, 0, 0);
+    walkKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    walkData.push(walkKeyframe1);
+    let walkKeyframe2 = [];
+    walkKeyframe2["cameraT"] = new vec3.fromValues(-0.1, 0, 60);
+    walkKeyframe2["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 0 + this.bodyjoint.localPosition[2]);
+    walkKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkData.push(walkKeyframe2);
+    let walkKeyframe3 = [];
+    walkKeyframe3["cameraT"] = new vec3.fromValues(-0.3, -1, 60);
+    walkKeyframe3["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 0 + this.bodyjoint.localPosition[2]);
+    walkKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe3["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    walkKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -80, 0, 0);
+    walkKeyframe3["armR2"] = quat.fromEuler(new quat.create(), -50, 0, 0);
+    walkKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -70, 0, 0);
+    walkKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    walkKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    walkKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    walkData.push(walkKeyframe3);
+    let walkKeyframe4 = [];
+    walkKeyframe4["cameraT"] = new vec3.fromValues(0, 0, 60);
+    walkKeyframe4["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 0 + this.bodyjoint.localPosition[2]);
+    walkKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
+    walkKeyframe4["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    walkData.push(walkKeyframe4);
+    let walkFrameList = [0.33, 0.17, 0.33, 0.17];
+    this.createAnimation("walk", walkData, 0.7, 0, 0, walkFrameList);
+
+    // Sit
+    let sitData = [];
+    let sitKeyframe1 = [];
+    sitKeyframe1["cameraT"] = new vec3.fromValues(0, -3, 60);
+    sitKeyframe1["bodyT"] = new vec3.fromValues(0, -3 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    sitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    sitKeyframe1["head"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    sitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
+    sitKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    sitKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
+    sitKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    sitKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -120, 0, 0);
+    sitKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    sitData.push(sitKeyframe1);
+    let sitFrameList = [1];
+    this.createAnimation("sit", sitData, 0.1, 0, 0.5, sitFrameList);
+
+    // Hit
+    let hitData = [];
+
+    let hitKeyframe1 = [];
+    hitKeyframe1["cameraT"] = new vec3.fromValues(0, 0, 65);
+    hitKeyframe1["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    hitKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), -10, 0, 0);
+    hitKeyframe1["head"] = quat.fromEuler(new quat.create(), 10, 10, 0);
+    hitKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -110, -30, -20);
+    hitKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, -30, 0);
+    hitKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe1["legL1"] = quat.fromEuler(new quat.create(), 40, 0, 0);
+    hitKeyframe1["legL2"] = quat.fromEuler(new quat.create(), -20, 0, 0);
+    hitKeyframe1["legR1"] = quat.fromEuler(new quat.create(), -40, 0, 0);
+    hitKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitData.push(hitKeyframe1);
+
+    let hitKeyframe2 = [];
+    hitKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 70);
+    hitKeyframe2["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    hitKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitKeyframe2["head"] = quat.fromEuler(new quat.create(), -10, -10, 0);
+    hitKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -80, 30, -30);
+    hitKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 30, 0);
+    hitKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 40, 0, 0);
+    hitKeyframe2["legL2"] = quat.fromEuler(new quat.create(), -20, 0, 0);
+    hitKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -40, 0, 0);
+    hitKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    hitData.push(hitKeyframe2);
+
+    let hitKeyframe3 = [];
+    hitKeyframe3["cameraT"] = new vec3.fromValues(0, 0, 62);
+    hitKeyframe3["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    hitKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legL1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    hitData.push(hitKeyframe3);
+
+    let hitFrameList = [0.4, 0.2, 0.4];
+    this.createAnimation("hit", hitData, 0.3, 0, 0.5, hitFrameList);
+
+    // Jump
+    let jumpData = [];
+    let jumpKeyframe1 = [];
+    jumpKeyframe1["cameraT"] = new vec3.fromValues(0, 8, 63);
+    jumpKeyframe1["bodyT"] = new vec3.fromValues(0, 10 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    jumpKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe1["head"] = quat.fromEuler(new quat.create(), 30, 20, 0);
+    jumpKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe1["armR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    jumpKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe1["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpData.push(jumpKeyframe1);
+
+    let jumpKeyframe2 = [];
+    jumpKeyframe2["cameraT"] = new vec3.fromValues(0, 5, 65);
+    jumpKeyframe2["bodyT"] = new vec3.fromValues(0, 5 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    jumpKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe2["head"] = quat.fromEuler(new quat.create(), -30, -20, 0);
+    jumpKeyframe2["armL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 50, 0, 0);
+    jumpKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpData.push(jumpKeyframe2);
+
+    let jumpKeyframe3 = [];
+    jumpKeyframe3["cameraT"] = new vec3.fromValues(0, 0, 62);
+    jumpKeyframe3["bodyT"] = new vec3.fromValues(0, -3 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    jumpKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    jumpKeyframe3["head"] = quat.fromEuler(new quat.create(), 10, 0, 0);
+    jumpKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["armR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    jumpKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    jumpKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    jumpData.push(jumpKeyframe3);
+
+    let jumpFrameList = [0.4, 0.3, 0.3];
+    this.createAnimation("jump", jumpData, 0.4, 0, 0.1, jumpFrameList);
+
+    // Swim
+    let swimData = [];
+    let swimKeyframe1 = [];
+    swimKeyframe1["cameraT"] = new vec3.fromValues(0, 5, 70);
+    swimKeyframe1["bodyT"] = new vec3.fromValues(0, 5 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    swimKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe1["head"] = quat.fromEuler(new quat.create(), -90, 10, 10);
+    swimKeyframe1["armL1"] = quat.fromEuler(new quat.create(), 170, 0, 20);
+    swimKeyframe1["armL2"] = quat.fromEuler(new quat.create(), 0, -10, -10);
+    swimKeyframe1["armR1"] = quat.fromEuler(new quat.create(), 170, 0, 0);
+    swimKeyframe1["armR2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe1["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe1["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimKeyframe1["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe1["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimData.push(swimKeyframe1);
+
+    let swimKeyframe2 = [];
+    swimKeyframe2["cameraT"] = new vec3.fromValues(0, 0, 65);
+    swimKeyframe2["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    swimKeyframe2["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe2["head"] = quat.fromEuler(new quat.create(), -110, -10, -10);
+    swimKeyframe2["armL1"] = quat.fromEuler(new quat.create(), 170, 0, -20);
+    swimKeyframe2["armL2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe2["armR1"] = quat.fromEuler(new quat.create(), 190, 10, 10);
+    swimKeyframe2["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    swimKeyframe2["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe2["legL2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimKeyframe2["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe2["legR2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimData.push(swimKeyframe2);
+
+    let swimKeyframe3 = [];
+    swimKeyframe3["cameraT"] = new vec3.fromValues(0, 5, 70);
+    swimKeyframe3["bodyT"] = new vec3.fromValues(0, 5 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    swimKeyframe3["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe3["head"] = quat.fromEuler(new quat.create(), -90, 10, 10);
+    swimKeyframe3["armL1"] = quat.fromEuler(new quat.create(), 170, 0, 20);
+    swimKeyframe3["armL2"] = quat.fromEuler(new quat.create(), 0, -10, -10);
+    swimKeyframe3["armR1"] = quat.fromEuler(new quat.create(), 170, 0, 0);
+    swimKeyframe3["armR2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe3["legL1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe3["legL2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimKeyframe3["legR1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe3["legR2"] = quat.fromEuler(new quat.create(), 30, 0, 0);
+    swimData.push(swimKeyframe3);
+
+    let swimKeyframe4 = [];
+    swimKeyframe4["cameraT"] = new vec3.fromValues(0, 0, 65);
+    swimKeyframe4["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 1 + this.bodyjoint.localPosition[2]);
+    swimKeyframe4["bodyR"] = quat.fromEuler(new quat.create(), 90, 0, 0);
+    swimKeyframe4["head"] = quat.fromEuler(new quat.create(), -110, -10, -10);
+    swimKeyframe4["armL1"] = quat.fromEuler(new quat.create(), 170, 0, -20);
+    swimKeyframe4["armL2"] = quat.fromEuler(new quat.create(), 0, 10, 10);
+    swimKeyframe4["armR1"] = quat.fromEuler(new quat.create(), 190, 10, 10);
+    swimKeyframe4["armR2"] = quat.fromEuler(new quat.create(), 0, 0, 0);
+    swimKeyframe4["legL1"] = quat.fromEuler(new quat.create(), 60, 0, 0);
+    swimKeyframe4["legL2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimKeyframe4["legR1"] = quat.fromEuler(new quat.create(), -60, 0, 0);
+    swimKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
+    swimData.push(swimKeyframe4);
+
+    let swimFrameList = [0.04, 0.33, 0.33, 0.33];
+    this.createAnimation("swim", swimData, 1.5, 0, 0.1, swimFrameList);
+  }
+  async initialize() {
+    // Basic setup for camera
+    const { width, height } = gl.canvas.getBoundingClientRect();
+    const aspectRatio = width / height;
+    this.camera = new cs380.Camera();
+    vec3.set(this.camera.transform.localPosition, 0, -40, 100);
+    mat4.perspective(
+      this.camera.projectionMatrix,
+      glMatrix.toRadian(45),
+      aspectRatio,
+      0.1,
+      1000
+    );
+    this.thingsToClear = [];
+    // initialize picking shader & buffer
+    this.pickingShader = await cs380.buildShader(cs380.PickingShader);
+    this.pickingBuffer = new cs380.PickingBuffer();
+    this.pickingBuffer.initialize(width, height);
+    this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
+    
+    // Build Scene Models
+    await this.buildModels();
+
+    // Construct HTML
+    await this.constructHTML();
+
+    // Handle Event in Scene.
+    await this.handleSceneInput();
+
+    // Construct Animation
+    await this.constructAnimation();
+
+    // SimpleOrbitControl && Toon Shading
+    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
+    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+      this.camera,
+      orbitControlCenter
+    );
+    this.thingsToClear.push(this.simpleOrbitControl);
+    this.isToonShading = false;
 
     // GL settings
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
     gl.frontFace(gl.CCW);
   }
-
-  onKeyDown(key) {
-    console.log(`key down: ${key}`);
-  }
-
   onMouseDown(e) {
     const { left, bottom } = gl.canvas.getBoundingClientRect();
-    const x = e.clientX - left;
-    const y = bottom - e.clientY;
+    const mouseX = e.clientX - left;
+    const mouseY = bottom - e.clientY;
+
+    this.prevMouseX = mouseX;
+    this.prevMouseY = mouseY;
+    this.currMouseX = mouseX;
+    this.currMouseY = mouseY;
 
     // Object with this index has just picked
-    const index = this.pickingBuffer.pick(x, y);
+    const index = this.pickingBuffer.pick(mouseX, mouseY);
 
-    console.log(`onMouseDown() got index ${index}`);
+    if (index != this.SelectedObjIdx){
+      this.arcBallAltitude = Math.PI / 2
+      this.arcBallAzimuth = Math.PI / 2
+    }
+
+    this.Mousepressed = true;
+    this.SelectedObjIdx = index - 1;
+    console.log(`Select Index: ${index - 1}`);
+    if (this.SelectedObjIdx < 0) return;
+    this.SelectedObject = this.Idx2ArcTransform[this.SelectedObjIdx];
+    this.SelectedObjectInitQuat = new quat.create();
+    quat.copy(this.SelectedObjectInitQuat, this.SelectedObject.localRotation);
+
+    //vec3.set(this.camera.transform.localPosition, this.SelectedObject.localPosition[0], this.SelectedObject.localPosition[1], 100)
   }
-
-  finalize() {
-    // Finalize WebGL objects (mesh, shader, texture, ...)
-    document.removeEventListener("keydown", this.handleKeyDown);
-    gl.canvas.removeEventListener("mousedown", this.handleMouseDown);
-    this.thingsToClear.forEach((it) => it.finalize());
+  onMouseMove(e) {
+    const canvas = gl.canvas;
+    if (!this.Mousepressed) return;
+    const rect = canvas.getBoundingClientRect();
+    //this.prevMouseX = this.currMouseX;
+    //this.prevMouseY = this.currMouseY;
+    this.currMouseX = e.clientX - rect.left;
+    this.currMouseY = rect.bottom - e.clientY;
+    //console.log(`Move ${this.prevMouseX}, ${this.prevMouseY} -> ${this.currMouseX}, ${this.currMouseY}`)
+    this.arcBallUpdate()
   }
+  onMouseUp(e) {
+    this.Mousepressed = false;
 
+    this.firstClicking = false;
+  }
+  onKeyDown(key) {
+    for(let i = 0; i < this.keyBindNum; i++){
+      let mappedList = this.status2BindedList[this.animationStatusList[i]];
+      for(let j = 0; j < mappedList.length; j++){
+        if(key == mappedList[j]){
+          this.setAnimationStatus(i);
+          console.log(`key down: ${key}`);
+          return;
+        }
+      }
+    }
+    if(key == "c"){
+      this.CustomInput = true;
+    }
+  }
+  onKeyUp(key) {
+    for(let i = 0; i < this.keyBindNum; i++){
+      let mappedList = this.status2BindedList[this.animationStatusList[i]];
+      for(let j = 0; j < mappedList.length; j++){
+        if(key == mappedList[j]){
+          if (this.animationStatusList[i] == this.currentStatusKey){
+            this.isPressing = false;
+          }
+          console.log(`key up: ${key}`);
+          return;
+        }
+      }
+    }
+    if(key == "c"){
+      this.CustomInput = false;
+      return;
+    }
+    // Not bounded key
+    if (this.CustomInput){
+      this.keyBindNum += 1;
+      let animationName = "custom" + key
+      this.animationStatusList.push(animationName)
+      this.status2BindedList[animationName] = [key]
+      this.archieveCurrentFrame(animationName);
+      return;
+    }
+  }
+  setAnimationStatus(idx){
+    console.log(this.animationStatusList[idx]);
+    this.currentStatusKey = this.animationStatusList[idx];
+    this.isAnimationRunning = true
+    this.firstInput = true
+    this.isPressing = true
+    this.pressingTime = 0;
+  }
+  updateAnimation(elapsed){
+    // Only One Animation at a time
+    if (this.firstInput){
+      this.animationStartTime = elapsed;
+      this.firstInput = false;
+    }
+
+    if (!this.isAnimationRunning) return;
+
+    let currentAnimationInfo = this.animationInfoDict[this.currentStatusKey];
+
+    let animationTime = currentAnimationInfo["animationTime"];
+    let waitTime = currentAnimationInfo["waitTime"];
+    let returnTime = currentAnimationInfo["returnTime"];
+    let totalTime = animationTime + waitTime + returnTime;
+    let totalFrame = currentAnimationInfo["num"];
+
+    if (totalFrame != currentAnimationInfo["dataList"].length){
+      console.log("Error! " + currentAnimationInfo + " DataList Length is Different!");
+    }
+
+    let timePassed = elapsed - this.animationStartTime - this.pressingTime;
+    // is Pressing, keep walking
+    if(this.isPressing && this.currentStatusKey == "walk" && timePassed >= animationTime + waitTime){
+      this.setAnimationStatus(1);
+      return;
+    }
+    if (timePassed > totalTime){
+      this.isAnimationRunning = false;
+      return;
+    }
+    if (timePassed > animationTime && timePassed < animationTime + waitTime){
+      return;
+    }
+    // Return to Default state
+    if (timePassed > animationTime + waitTime){
+      if(this.isPressing){
+        this.pressingTime += timePassed - animationTime + waitTime;
+        timePassed = timePassed - animationTime - waitTime;
+        return;
+      }
+      // Now Play KeyFrame Animation
+      currentAnimationInfo = this.animationInfoDict["default"]
+      let currentKeyframeData = currentAnimationInfo["dataList"][0];
+      let currentMoveRatio = (timePassed - waitTime - animationTime) / returnTime
+      if (currentMoveRatio > 0.8){
+        currentMoveRatio = 1
+      }
+      this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
+      this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+      this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+      this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+      this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
+      this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
+      this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
+      this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+      this.animationRotate(this.leftLegUpjoint.transform.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+      this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
+      this.animationRotate(this.rightLegUpjoint.transform.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+      this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
+      return;
+    }
+
+    let idx = 0;
+    let ratioList = currentAnimationInfo["keyFrameRatioList"];
+    let accumulatedRatio = 0;
+    let currentRatio = 0;
+    for (let i = 0; i< currentAnimationInfo["num"]; i++){
+      currentRatio = ratioList[i];
+      if (timePassed >= accumulatedRatio * animationTime && timePassed <= animationTime * (accumulatedRatio + currentRatio)){
+        idx = i;
+        break;
+      }
+      accumulatedRatio += currentRatio
+    }
+    // Now Play KeyFrame Animation
+    let currentKeyframeData = currentAnimationInfo["dataList"][idx];
+    let currentMoveRatio = (timePassed - accumulatedRatio * animationTime) / (animationTime * currentRatio)
+    if (currentMoveRatio > 0.8){
+      currentMoveRatio = 1
+    }
+    this.animationMove(this.camera.transform.localPosition, currentKeyframeData["cameraT"], currentMoveRatio);
+    this.animationMove(this.bodyjoint.localPosition, currentKeyframeData["bodyT"], currentMoveRatio);
+    this.animationRotate(this.bodyjoint.localRotation, currentKeyframeData["bodyR"], currentMoveRatio);
+    this.animationRotate(this.headjoint.localRotation, currentKeyframeData["head"], currentMoveRatio);
+    this.animationRotate(this.leftArmjoint.localRotation, currentKeyframeData["armL1"], currentMoveRatio);
+    this.animationRotate(this.leftArmMidjoint.localRotation, currentKeyframeData["armL2"], currentMoveRatio);
+    this.animationRotate(this.rightArmjoint.localRotation, currentKeyframeData["armR1"], currentMoveRatio);
+    this.animationRotate(this.rightArmMidjoint.localRotation, currentKeyframeData["armR2"], currentMoveRatio);
+    this.animationRotate(this.leftLegUpjoint.transform.localRotation, currentKeyframeData["legL1"], currentMoveRatio);
+    this.animationRotate(this.leftLegMidjoint.localRotation, currentKeyframeData["legL2"], currentMoveRatio);
+    this.animationRotate(this.rightLegUpjoint.transform.localRotation, currentKeyframeData["legR1"], currentMoveRatio);
+    this.animationRotate(this.rightLegMidjoint.localRotation, currentKeyframeData["legR2"], currentMoveRatio);
+  }
+  arcBallUpdate() { 
+    if (!this.Mousepressed){
+      return;
+    }
+
+    //arcball center : 401, 401
+    let relativePX = this.prevMouseX / 401 - 1
+    let relativePY = this.prevMouseY / 401 - 1
+    let relativeCX = this.currMouseX / 401 - 1
+    let relativeCY = this.currMouseY / 401 - 1
+
+    if (Math.pow(relativePX, 2) + Math.pow(relativePY, 2) >=1) return;
+    if (Math.pow(relativeCX, 2) + Math.pow(relativeCY, 2) >=1) return;
+
+    let v1 = vec3.fromValues(relativePX, relativePY, Math.sqrt(1 - Math.pow(relativePX, 2) - Math.pow(relativePY, 2)));
+    let v2 = vec3.fromValues(relativeCX, relativeCY, Math.sqrt(1 - Math.pow(relativeCX, 2) - Math.pow(relativeCY, 2)));
+     
+    let angle = vec3.angle(v1, v2);
+    let axisVect = vec3.create()
+    vec3.cross(axisVect, v1, v2);
+    vec3.normalize(axisVect, axisVect);
+    //console.log(`Angle : ${angle} \nAxis: ${axisVect}`)
+
+    let rotateQuat = quat.create();
+    quat.setAxisAngle(rotateQuat, axisVect, angle)
+    quat.normalize(rotateQuat, rotateQuat)
+    quat.multiply(this.SelectedObject.localRotation, rotateQuat, this.SelectedObjectInitQuat)
+  }
   update(elapsed, dt) {
-    this.simpleOrbitControl.update(dt);
+    if (this.SelectedObjIdx == -1)
+      this.simpleOrbitControl.update(dt);
     // Updates before rendering here
     
     // Render picking information first
@@ -538,5 +1130,17 @@ export default class Assignment3 extends cs380.BaseApp {
       const obj = this.objectList[i]
       obj.render(this.camera)
     }
+
+    this.updateAnimation(elapsed);
+  }
+  finalize() {
+    // Finalize WebGL objects (mesh, shader, texture, ...)
+    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keyup", this.handleKeyUp);
+    gl.canvas.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    gl.canvas.removeEventListener("wheel", this.handleWheel);
+    this.thingsToClear.forEach((it) => it.finalize());
   }
 }

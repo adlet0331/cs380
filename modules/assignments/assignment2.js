@@ -316,7 +316,6 @@ export default class Assignment2 extends cs380.BaseApp {
     gl.frontFace(gl.CCW);
 
     // Implement ArcBall per Picking Objects
-
     this.prevMouseX = 0;
     this.prevMouseY = 0;
     this.currMouseX = 0;

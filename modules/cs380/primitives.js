@@ -219,7 +219,10 @@ export function generateCone(sides = 16, radius = 1, height = 1) {
   // TODO: Implement cone generation
   const addTri = (p0, p1, p2) => {
     data.vertices.push(...p0, ...p1, ...p2);
-    data.vertexNormals.push(...p0, ...p1, ...p2);
+    let vec1 = [p0[0] - p1[0], p0[1] - p1[1], p0[2] - p1[2]];
+    let vec2 = [p0[0] - p2[0], p0[1] - p2[1], p0[2] - p2[2]];
+    let normal = [vec1[1] * vec2[2] - vec1[2] * vec2[1], - vec1[0] * vec2[2] + vec1[2] * vec2[0], vec1[0] * vec2[1] - vec1[1] * vec2[0]];
+    data.vertexNormals.push(...normal, ...normal, ...normal);
   }
 
   const angle2xyz = (theta, z) => [
@@ -269,10 +272,12 @@ export function generateCylinder(sides = 16, radius = 1, height = 1) {
     indices: [],
   };
 
-  // TODO: Implement cylinder generation
   const addTri = (p0, p1, p2) => {
     data.vertices.push(...p0, ...p1, ...p2);
-    data.vertexNormals.push(...p0, ...p1, ...p2);
+    let vec1 = [p0[0] - p1[0], p0[1] - p1[1], p0[2] - p1[2]];
+    let vec2 = [p0[0] - p2[0], p0[1] - p2[1], p0[2] - p2[2]];
+    let normal = [vec1[1] * vec2[2] - vec1[2] * vec2[1], - vec1[0] * vec2[2] + vec1[2] * vec2[0], vec1[0] * vec2[1] - vec1[1] * vec2[0]];
+    data.vertexNormals.push(...normal, ...normal, ...normal);
   }
 
   const addQuad = (p0, p1, p2, p3) => {

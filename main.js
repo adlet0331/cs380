@@ -81,7 +81,7 @@ const apps = {
 };
 
 // Key of the very first app once you access localhost:8000
-const defaultApp = "lab8";
+const defaultApp = "assignment3";
 
 function main() {
   const canvas = document.querySelector("#glcanvas");
