@@ -218,7 +218,6 @@ export default class Assignment1 extends cs380.BaseApp {
     let frostObj = new cs380.RenderObject(this.frostmesh, this.solidshader)
     frostObj.uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(frostObj.uniforms.mainColor, colorStr)
-    //this.frostObjects.pop();
     this.frostObjects.push(frostObj);
   }
 
@@ -260,6 +259,8 @@ export default class Assignment1 extends cs380.BaseApp {
       this.random_angle = Math.random() * 0.2 + 0.4;
     }
 
+    this.frostObjects = []
+
     this.addTree(12, 1, -2, 0.04, 1, "#AAFFFF", this.random_angle, 1.5 * elapsed, 0)
     
     if (this.treeFlag[0] == 1){
@@ -267,6 +268,7 @@ export default class Assignment1 extends cs380.BaseApp {
     }
 
     // Clear canvas
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.clearColor(0, 0, 0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
