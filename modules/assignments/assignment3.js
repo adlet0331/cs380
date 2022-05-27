@@ -180,7 +180,7 @@ export default class Assignment3 extends cs380.BaseApp {
     this.lights.push(light6);
 
 
-  // Generate Plane
+   // Generate Plane
     const planeBackMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeY));
     const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
     const planeBottomMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeZ));
