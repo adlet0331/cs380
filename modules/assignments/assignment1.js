@@ -59,7 +59,6 @@ export default class Assignment1 extends cs380.BaseApp {
     this.treeFlag = [0, 0, 0];
     this.solidshader = await cs380.buildShader(SolidShader);
   }
-
   buildTriangle = (mesh, centerx, centery, radius, additangle) => {
     const angle = 2 * Math.PI / 3
       const point1 = vec3.fromValues(
@@ -81,7 +80,6 @@ export default class Assignment1 extends cs380.BaseApp {
       );
       mesh.addVertexData(...point3);
   }
-
   buildSnow = (N, radius, firstRadius) => {
     this.snowmesh = new cs380.Mesh();
     this.snowmesh.finalize();
@@ -121,7 +119,6 @@ export default class Assignment1 extends cs380.BaseApp {
     
     this.snowmesh.initialize();
   }
-
   addSnowObject = (radius, colorStr) => {
     this.buildSnow(5, radius, 0.8);
     let snowObject = new cs380.RenderObject(this.snowmesh, this.solidshader);
@@ -129,7 +126,6 @@ export default class Assignment1 extends cs380.BaseApp {
     cs380.utils.hexToRGB(snowObject.uniforms.mainColor, colorStr);
     this.snowObjects.push(snowObject);
   }
-
   buildSquare = (mesh, startx, starty, hwidth, height, angle) => {
     const hpi = Math.PI / 2
     let point1 = vec3.fromValues(
@@ -159,7 +155,6 @@ export default class Assignment1 extends cs380.BaseApp {
     mesh.addVertexData(...point4);
     mesh.addVertexData(...point1);
   }
-
   buildTree = (N, sx, sy, inithwidth, initLength, drawLength, randomangleadd, code) => {
     this.frostmesh = new cs380.Mesh();
     this.frostmesh.finalize();
@@ -212,7 +207,6 @@ export default class Assignment1 extends cs380.BaseApp {
     this.frostmesh.drawMode = gl.TRIANGLES
     this.frostmesh.initialize();
   }
-
   addTree = (N, sx, sy, inithwidth, initLength, colorStr, angle, elapsed, code) => {
     this.buildTree(N, sx, sy, inithwidth, initLength, elapsed, angle, code)
     let frostObj = new cs380.RenderObject(this.frostmesh, this.solidshader)
@@ -220,13 +214,11 @@ export default class Assignment1 extends cs380.BaseApp {
     cs380.utils.hexToRGB(frostObj.uniforms.mainColor, colorStr)
     this.frostObjects.push(frostObj);
   }
-
   finalize() {
     // Finalize WebGL objects (mesh, shader, texture, ...)
-    //this.mesh.finalize();
-    //this.shader.finalize();
+    this.backmesh.finalize();
+    this.vertexColorShader.finalize();
   }
-
   update(elapsed, dt) {
     // Updates before rendering here
     const makeSnowRandomly = () => {
@@ -252,24 +244,18 @@ export default class Assignment1 extends cs380.BaseApp {
       info['y'] = Math.random() * 2 + 2
       this.snowObjectsInfo.push(info);
     }
-    
     makeSnowRandomly();
-
     if (elapsed == 0){
       this.random_angle = Math.random() * 0.2 + 0.4;
     }
-
     this.frostObjects = []
-
     this.addTree(12, 1, -2, 0.04, 1, "#AAFFFF", this.random_angle, 1.5 * elapsed, 0)
-    
     if (this.treeFlag[0] == 1){
       this.addTree(10, 0, -2, 0.02, 0.5, "AAFFFF", this.random_angle, 1.5 * elapsed - this.beforeLength, 1)
     }
-
     // Clear canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    gl.clearColor(0, 0, 0, 1.0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.clearColor(0, 0, 0, 0.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);

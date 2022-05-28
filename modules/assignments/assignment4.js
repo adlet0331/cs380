@@ -7,8 +7,6 @@ import { LightType, Light, BlinnPhongShader, Material } from "../blinn_phong.js"
 
 import { Transform } from "../cs380/transform.js";
 
-import { SimpleShader } from "../simple_shader.js";
-
 import { UnlitTextureShader } from "../unlit_texture_shader.js";
 
 class Framebuffer {
@@ -183,7 +181,6 @@ export default class Assignment4 extends cs380.BaseApp {
   createAnimation = (keyString, animationData, totalT, waitT, retT, ratioList) => {
     let dict = [];
     dict["num"] = animationData.length;
-    console.log("Animation keyframe len: " + dict["num"]);
     dict["animationTime"] = totalT;
     dict["waitTime"] = waitT;
     dict["returnTime"] = retT;
@@ -249,13 +246,11 @@ export default class Assignment4 extends cs380.BaseApp {
     });
     const lighthouseMesh = cs380.Mesh.fromData(lighthouseLoaderResult.lighthouse);
 
-    const simpleShader = await cs380.buildShader(SimpleShader);
     // TODO: import BlinnPhongShader
     const blinnPhongShader = await cs380.buildShader(BlinnPhongShader);
 
     this.thingsToClear.push(bunnyMesh);
     this.thingsToClear.push(lighthouseMesh);
-    this.thingsToClear.push(simpleShader);
     this.thingsToClear.push(blinnPhongShader);
 
     // initialize light sources
@@ -418,33 +413,33 @@ export default class Assignment4 extends cs380.BaseApp {
     this.headHair = await this.generateMesh(headHairMesh, this.haircolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
     vec3.set(this.headHair.transform.localPosition, 0, 2, 0);
     this.headfrontleftHair = await this.generateMesh(unitpixelMesh, this.haircolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headfrontleftHair, -1.75, 1.25, 2.05);
+    setPixelPos(this.headfrontleftHair, -1.75, 1.25, 2.15);
     this.headfrontrightHair = await this.generateMesh(unitpixelMesh, this.haircolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headfrontrightHair, 1.75, 1.25, 2.05);
+    setPixelPos(this.headfrontrightHair, 1.75, 1.25, 2.15);
     this.headleftEye = await this.generateMesh(unitpixelMesh, this.purple, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headleftEye, -0.75, 0.25, 2.05);
+    setPixelPos(this.headleftEye, -0.75, 0.25, 2.15);
     this.headrightEye = await this.generateMesh(unitpixelMesh, this.purple, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headrightEye, 0.75, 0.25, 2.05);
+    setPixelPos(this.headrightEye, 0.75, 0.25, 2.15);
     this.headWhiteleftEye = await this.generateMesh(unitpixelMesh, this.white, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headWhiteleftEye, -1.25, 0.25, 2.05);
+    setPixelPos(this.headWhiteleftEye, -1.25, 0.25, 2.15);
     this.headrightWhiteEye = await this.generateMesh(unitpixelMesh, this.white, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.headrightWhiteEye, 1.25, 0.25, 2.05);
+    setPixelPos(this.headrightWhiteEye, 1.25, 0.25, 2.15);
     this.uppermustache1 = await this.generateMesh(unitpixelMesh, this.upmustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.uppermustache1, -0.25, -0.25, 2.05);
+    setPixelPos(this.uppermustache1, -0.25, -0.25, 2.15);
     this.uppermustache2 = await this.generateMesh(unitpixelMesh, this.upmustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.uppermustache2, 0.25, -0.25, 2.05);
+    setPixelPos(this.uppermustache2, 0.25, -0.25, 2.15);
     this.downmustache1 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache1, -0.75, -0.75, 2.05);
+    setPixelPos(this.downmustache1, -0.75, -0.75, 2.15);
     this.downmustache2 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache2, -0.75, -1.25, 2.05);
+    setPixelPos(this.downmustache2, -0.75, -1.25, 2.15);
     this.downmustache3 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache3, -0.25, -1.25, 2.05);
+    setPixelPos(this.downmustache3, -0.25, -1.25, 2.15);
     this.downmustache4 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache4, 0.25, -1.25, 2.05);
+    setPixelPos(this.downmustache4, 0.25, -1.25, 2.15);
     this.downmustache5 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache5, 0.75, -1.25, 2.05);
+    setPixelPos(this.downmustache5, 0.75, -1.25, 2.15);
     this.downmustache6 = await this.generateMesh(unitpixelMesh, this.mustachecolor, 1, this.headCube.transform, blinnPhongShader, this.lights);
-    setPixelPos(this.downmustache6, 0.75, -0.75, 2.05);
+    setPixelPos(this.downmustache6, 0.75, -0.75, 2.15);
     // Head end
 
     //Left Arm
@@ -550,8 +545,6 @@ export default class Assignment4 extends cs380.BaseApp {
       <br/>
       <label for="setting-spotlight-smooth">SpotLight smooth</label>
       <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
-      <label for="setting-spotlight-rotate">SpotLight Rotate</label>
-      <input type="range" min=-1.57 max=1.57 value=0 step=0.01 id="setting-spotlight-rotate">
       <br/>
     <!-- Camera shutter UI --> 
     <audio id="shutter-sfx">
@@ -596,49 +589,36 @@ export default class Assignment4 extends cs380.BaseApp {
     }
     setInputBehavior('setting-ambient-illuminance', true, true,
         (val) => { 
-          console.log("Ambient Illuminance: " + val);
           this.lights[0].illuminance=val;
         });
     setInputBehavior('setting-directional-illuminance', true, true,
         (val) => { 
-          console.log("Directional Illuminance: " + val);
           this.lights[1].illuminance=val;
         });
     setInputBehavior('setting-point-illuminance', true, true,
         (val) => { 
-          console.log("Point Illuminance: " + val);
           this.lights[2].illuminance=val;
         });
     setInputBehavior('setting-point-z', true, true,
         (val) => { 
-          console.log("Point X: " + val);
           vec3.set(this.lights[2].transform.localPosition, this.planeX / 2 - 10, -this.planeY / 2 + 2, val);
         });
     setInputBehavior('setting-spotlight-illuminance', true, true,
         (val) => { 
-          console.log("Spotlight Illuminance: " + val);
           this.lights[3].illuminance=val;
         });
     setInputBehavior("setting-spotlight-smooth", true, true, 
         (val) => { 
-          console.log("Spotlight Smooth: " + val);
           this.lights[3].angleSmoothness = val;
         });
     setInputBehavior("setting-spotlight-angle", true, true, 
         (val) => { 
-          console.log("Spotlight angle: " + val);
           this.lights[3].angle = val;
-        });
-    setInputBehavior("setting-spotlight-rotate", true, true, 
-        (val) => { 
-          console.log("Spotlight Rotate: " + val);
-          quat.rotateY(this.lights[3].transform.localRotation, this.lightHouseLightInitRotation, val); 
         });
     setInputBehavior("toon-shading", true, false, 
         () => { 
           this.isToonShading = !this.isToonShading;
           this.updateUniforms();
-          console.log("Toon Shading: " + this.isToonShading);
         });
   }
   async handleSceneInput(){
@@ -777,8 +757,6 @@ export default class Assignment4 extends cs380.BaseApp {
     let walkKeyframe1 = [];
     walkKeyframe1["cameraT"] = new vec3.fromValues(0.5, 1, 60);
     walkKeyframe1["bodyT"] = new vec3.fromValues(0, 0 + this.bodyjoint.localPosition[1], 0 + this.bodyjoint.localPosition[2]);
-    console.log(this.bodyjoint.localPosition);
-    console.log(walkKeyframe1["bodyT"]);
     walkKeyframe1["bodyR"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["head"] = quat.fromEuler(new quat.create(), 0, 0, 0);
     walkKeyframe1["armL1"] = quat.fromEuler(new quat.create(), -90, 0, 0);
@@ -1020,68 +998,6 @@ export default class Assignment4 extends cs380.BaseApp {
     let swimFrameList = [0.04, 0.33, 0.33, 0.33];
     this.createAnimation("swim", swimData, 1.5, 0, 0.1, swimFrameList);
   }
-  async initialize() {
-    // Basic setup for camera
-    const { width, height } = gl.canvas.getBoundingClientRect();
-    const aspectRatio = width / height;
-    this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 100);
-    mat4.perspective(
-      this.camera.projectionMatrix,
-      (45 * Math.PI) / 180,
-      aspectRatio,
-      0.01,
-      1000
-      );
-
-    this.width = width;
-    this.height = height;
-
-    // Rest of initialization below
-    this.thingsToClear = [];
-
-    this.photo = new PhotoFilm()
-    await this.photo.initialize(width, height);
-    this.thingsToClear.push(this.photo);
-
-    // TODO: initialize your object + scene here
-
-    // initialize picking shader & buffer
-    this.pickingShader = await cs380.buildShader(cs380.PickingShader);
-    this.pickingBuffer = new cs380.PickingBuffer();
-    this.pickingBuffer.initialize(width, height);
-    this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
-    // Build Scene Models
-    await this.buildModels();
-
-    // Construct HTML
-    await this.constructHTML();
-
-    // Handle Event in Scene.
-    await this.handleSceneInput();
-
-    // Construct Animation
-    await this.constructAnimation();
-
-    // SimpleOrbitControl && Toon Shading
-    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
-    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
-      this.camera,
-      orbitControlCenter
-    );
-    this.thingsToClear.push(this.simpleOrbitControl);
-    this.isToonShading = false;
-
-    // GL settings
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
-    gl.frontFace(gl.CCW);
-
-    // Setup GUIs
-    // TODO: add camera effects of your own
-    // Change "my-effect" and "My camera effect" to fitting name for your effect.
-    // You can add multiple options.
-  }
   onMouseDown(e) {
     const { left, bottom } = gl.canvas.getBoundingClientRect();
     const mouseX = e.clientX - left;
@@ -1102,7 +1018,6 @@ export default class Assignment4 extends cs380.BaseApp {
 
     this.Mousepressed = true;
     this.SelectedObjIdx = index - 1;
-    console.log(`Select Index: ${index - 1}`);
     if (this.SelectedObjIdx < 0) return;
     this.SelectedObject = this.Idx2ArcTransform[this.SelectedObjIdx];
     this.SelectedObjectInitQuat = new quat.create();
@@ -1119,7 +1034,6 @@ export default class Assignment4 extends cs380.BaseApp {
     //this.prevMouseY = this.currMouseY;
     this.currMouseX = e.clientX - rect.left;
     this.currMouseY = rect.bottom - e.clientY;
-    //console.log(`Move ${this.prevMouseX}, ${this.prevMouseY} -> ${this.currMouseX}, ${this.currMouseY}`)
     this.arcBallUpdate()
   }
   onMouseUp(e) {
@@ -1134,7 +1048,6 @@ export default class Assignment4 extends cs380.BaseApp {
       for(let j = 0; j < mappedList.length; j++){
         if(key == mappedList[j]){
           this.setAnimationStatus(i);
-          console.log(`key down: ${key}`);
           return;
         }
       }
@@ -1151,7 +1064,6 @@ export default class Assignment4 extends cs380.BaseApp {
           if (this.animationStatusList[i] == this.currentStatusKey){
             this.isPressing = false;
           }
-          console.log(`key up: ${key}`);
           return;
         }
       }
@@ -1171,7 +1083,6 @@ export default class Assignment4 extends cs380.BaseApp {
     }
   }
   setAnimationStatus(idx){
-    console.log(this.animationStatusList[idx]);
     this.currentStatusKey = this.animationStatusList[idx];
     this.isAnimationRunning = true
     this.firstInput = true
@@ -1203,6 +1114,10 @@ export default class Assignment4 extends cs380.BaseApp {
     // is Pressing, keep walking
     if(this.isPressing && this.currentStatusKey == "walk" && timePassed >= animationTime + waitTime){
       this.setAnimationStatus(1);
+      return;
+    }
+    if(this.isPressing && this.currentStatusKey == "swim" && timePassed >= animationTime + waitTime){
+      this.setAnimationStatus(5);
       return;
     }
     if (timePassed > totalTime){
@@ -1293,7 +1208,6 @@ export default class Assignment4 extends cs380.BaseApp {
     let axisVect = vec3.create()
     vec3.cross(axisVect, v1, v2);
     vec3.normalize(axisVect, axisVect);
-    //console.log(`Angle : ${angle} \nAxis: ${axisVect}`)
 
     let rotateQuat = quat.create();
     quat.setAxisAngle(rotateQuat, axisVect, angle)
@@ -1310,7 +1224,68 @@ export default class Assignment4 extends cs380.BaseApp {
     gl.canvas.removeEventListener("wheel", this.handleWheel);
     this.thingsToClear.forEach((it) => it.finalize());
   }
+  async initialize() {
+    // Basic setup for camera
+    const { width, height } = gl.canvas.getBoundingClientRect();
+    const aspectRatio = width / height;
+    this.camera = new cs380.Camera();
+    vec3.set(this.camera.transform.localPosition, 0, 0, 100);
+    mat4.perspective(
+      this.camera.projectionMatrix,
+      (45 * Math.PI) / 180,
+      aspectRatio,
+      0.01,
+      1000
+      );
 
+    this.width = width;
+    this.height = height;
+
+    // Rest of initialization below
+    this.thingsToClear = [];
+
+    this.photo = new PhotoFilm()
+    await this.photo.initialize(width, height);
+    this.thingsToClear.push(this.photo);
+
+    // TODO: initialize your object + scene here
+
+    // initialize picking shader & buffer
+    this.pickingShader = await cs380.buildShader(cs380.PickingShader);
+    this.pickingBuffer = new cs380.PickingBuffer();
+    this.pickingBuffer.initialize(width, height);
+    this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
+    // Build Scene Models
+    await this.buildModels();
+
+    // Construct HTML
+    await this.constructHTML();
+
+    // Handle Event in Scene.
+    await this.handleSceneInput();
+
+    // Construct Animation
+    await this.constructAnimation();
+
+    // SimpleOrbitControl && Toon Shading
+    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
+    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+      this.camera,
+      orbitControlCenter
+    );
+    this.thingsToClear.push(this.simpleOrbitControl);
+    this.isToonShading = false;
+
+    // GL settings
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.frontFace(gl.CCW);
+
+    // Setup GUIs
+    // TODO: add camera effects of your own
+    // Change "my-effect" and "My camera effect" to fitting name for your effect.
+    // You can add multiple options.
+  }
   update(elapsed, dt) {
     // TODO: Update objects here
     if (this.SelectedObjIdx == -1)
@@ -1399,7 +1374,6 @@ export default class Assignment4 extends cs380.BaseApp {
 
       // TODO: Remove the following line after you implemented.
       // (and please, remove any console.log(..) within the update loop from your submission)
-      console.log("TODO: camera effect (" + this.camereEffect + ")");
 
       // Below codes will do no effectl it just renders the scene. You may (should?) delete this.
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
