@@ -3,78 +3,19 @@ import { vec3, mat4, quat } from "../cs380/gl-matrix.js";
 
 import * as cs380 from "../cs380/cs380.js";
 
+import { Skybox, SkyboxShader } from "../skybox_shader.js";
+
 import { LightType, Light, BlinnPhongShader, Material } from "../blinn_phong.js";
+
+import { SimpleShader } from "../simple_shader.js"
+import { SolidShader } from "../solid_shader.js"
+import { VertexColorShader } from "../vertex_color_shader.js";
 
 import { Transform } from "../cs380/transform.js";
 
 import { UnlitTextureShader } from "../unlit_texture_shader.js";
-
-class Framebuffer {
-  constructor() {
-    this.finalize();
-  }
-
-  finalize() {
-    gl.deleteTexture(this.colorTexture);
-    gl.deleteRenderbuffer(this.dbo);
-    gl.deleteFramebuffer(this.fbo);
-    this.initialized = false;
-  }
-
-  initialize(width, height) {
-    if (this.initialized) this.finalize();
-
-    this.fbo = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-    this.colorTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.colorTexture);
-    // Unlike picking buffer, it uses linear sampling
-    // so that the sampled image is less blocky under extreme distortion
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGB,
-      width,
-      height,
-      0,
-      gl.RGB,
-      gl.UNSIGNED_BYTE,
-      null
-    );
-
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      this.colorTexture,
-      0
-    );
-
-    this.dbo = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, this.dbo);
-    gl.renderbufferStorage(
-      gl.RENDERBUFFER,
-      gl.DEPTH_COMPONENT16,
-      width,
-      height
-    );
-
-    gl.framebufferRenderbuffer(
-      gl.FRAMEBUFFER,
-      gl.DEPTH_ATTACHMENT,
-      gl.RENDERBUFFER,
-      this.dbo
-    );
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-}
+import { PipEdgeShader } from "../pip_edge_shader.js";
+import Assignment1 from "./assignment1.js";
 
 class PhotoFilm {
   async initialize(width, height) {
@@ -151,7 +92,130 @@ class PhotoFilm {
     this.enabled = false;
   }
 }
+class TextureShader extends cs380.BaseShader {
+  static get source() {
+    return [
+      [gl.VERTEX_SHADER, 'resources/uv_simple.vert'],
+      [gl.FRAGMENT_SHADER, 'resources/uv_simple.frag']
+    ];
+  }
+  generateUniformLocations() {
+    return {
+      projectionMatrix: gl.getUniformLocation(this.program, 'projectionMatrix'),
+      cameraTransform: gl.getUniformLocation(this.program, 'cameraTransform'),
+      modelTransform: gl.getUniformLocation(this.program, 'modelTransform'),
+      mainTexture: gl.getUniformLocation(this.program, 'mainTexture'),
+    };
+  }
+  setUniforms(kv) {
+    this.setUniformMat4(kv, 'projectionMatrix');
+    this.setUniformMat4(kv, 'cameraTransform');
+    this.setUniformMat4(kv, 'modelTransform');
+    this.setUniformTexture(kv, 'mainTexture', 0);
+  }
+}
+class Framebuffer {
+  constructor() {
+    this.finalize();
+  }
 
+  finalize() {
+    gl.deleteTexture(this.colorTexture);
+    gl.deleteRenderbuffer(this.dbo);
+    gl.deleteFramebuffer(this.fbo);
+    this.initialized = false;
+  }
+
+  initialize(width, height) {
+    if (this.initialized) this.finalize();
+
+    this.fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    this.colorTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.colorTexture);
+    // Unlike picking buffer, it uses linear sampling
+    // so that the sampled image is less blocky under extreme distortion
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGB,
+      width,
+      height,
+      0,
+      gl.RGB,
+      gl.UNSIGNED_BYTE,
+      null
+    );
+
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.colorTexture,
+      0
+    );
+
+    this.dbo = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.dbo);
+    gl.renderbufferStorage(
+      gl.RENDERBUFFER,
+      gl.DEPTH_COMPONENT16,
+      width,
+      height
+    );
+
+    gl.framebufferRenderbuffer(
+      gl.FRAMEBUFFER,
+      gl.DEPTH_ATTACHMENT,
+      gl.RENDERBUFFER,
+      this.dbo
+    );
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+}
+class Pip {
+  async initialize(width, height, trans, scale) {
+    this.framebuffer = new Framebuffer();
+    this.framebuffer.initialize(width, height);
+
+    const planeMeshData = cs380.primitives.generatePlane(1,1);
+    const planeMesh = cs380.Mesh.fromData(planeMeshData);
+    const shader = await cs380.buildShader(SimpleShader);
+    
+    this.transform = new cs380.Transform();
+    quat.rotateY(this.transform.localRotation, quat.create(), Math.PI);
+
+    this.image = new cs380.RenderObject(planeMesh, shader);
+    this.image.uniforms.useScreenSpace = false;
+    this.image.uniforms.useColor = true;
+    this.image.uniforms.mainTexture = this.framebuffer.colorTexture;
+    this.image.uniforms.width = width;
+    this.image.uniforms.height = height;
+    this.image.transform.localPosition = trans;
+    this.image.transform.localScale = scale;
+    this.image.transform.setParent(this.transform);
+
+    this.thingsToClear = [shader, planeMesh, this.framebuffer];
+  }
+
+  render(camera) {
+    //const prevDepthFunc = gl.getParameter(gl.DEPTH_FUNC);
+    this.image.render(camera);
+    //gl.depthFunc(prevDepthFunc);
+  }
+  finalize(){
+    for (const thing of this.thingsToClear){
+      thing.finalize();    
+    }
+  }
+}
 export default class Assignment4 extends cs380.BaseApp {
   updateUniforms = () => {
     for (let i = 0; i < this.objectList.length; i++){
@@ -258,7 +322,7 @@ export default class Assignment4 extends cs380.BaseApp {
     this.objectList = [];
 
     // Plane Const
-    this.planeX = 60
+    this.planeX = 70
     this.planeY = 70
     this.planeZ = 60
         
@@ -325,13 +389,13 @@ export default class Assignment4 extends cs380.BaseApp {
     const planeLeftMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeZ, this.planeY));
     const planeBottomMesh = cs380.Mesh.fromData(cs380.primitives.generatePlane(this.planeX, this.planeZ));
 
-    this.planeBack = await this.generateMesh(planeBackMesh, "#888888", 0, null, blinnPhongShader, this.lights);
-    quat.rotateX(this.planeBack.transform.localRotation, this.planeBack.transform.localRotation, Math.PI);
-    vec3.set(this.planeBack.transform.localPosition, 0, 0, - this.planeZ / 2);
+    //this.planeBack = await this.generateMesh(planeBackMesh, "#888888", 0, null, blinnPhongShader, this.lights);
+    //quat.rotateX(this.planeBack.transform.localRotation, this.planeBack.transform.localRotation, Math.PI);
+    //vec3.set(this.planeBack.transform.localPosition, 0, 0, - this.planeZ / 2);
 
-    this.planeLeft = await this.generateMesh(planeLeftMesh, "#BBBBBB", 0, null, blinnPhongShader, this.lights);
-    quat.rotateY(this.planeLeft.transform.localRotation, this.planeLeft.transform.localRotation, - Math.PI / 2);
-    vec3.set(this.planeLeft.transform.localPosition, - this.planeX / 2, 0, 0);
+    //this.planeLeft = await this.generateMesh(planeLeftMesh, "#BBBBBB", 0, null, blinnPhongShader, this.lights);
+    //quat.rotateY(this.planeLeft.transform.localRotation, this.planeLeft.transform.localRotation, - Math.PI / 2);
+    //vec3.set(this.planeLeft.transform.localPosition, - this.planeX / 2, 0, 0);
 
     this.planeBottom = await this.generateMesh(planeBottomMesh, "#444444", 0, null, blinnPhongShader, this.lights);
     quat.rotateX(this.planeBottom.transform.localRotation, this.planeBottom.transform.localRotation, Math.PI / 2);
@@ -995,7 +1059,7 @@ export default class Assignment4 extends cs380.BaseApp {
     swimKeyframe4["legR2"] = quat.fromEuler(new quat.create(), 5, 0, 0);
     swimData.push(swimKeyframe4);
 
-    let swimFrameList = [0.04, 0.33, 0.33, 0.33];
+    let swimFrameList = [0.25, 0.25, 0.25, 0.25];
     this.createAnimation("swim", swimData, 1.5, 0, 0.1, swimFrameList);
   }
   onMouseDown(e) {
@@ -1224,12 +1288,77 @@ export default class Assignment4 extends cs380.BaseApp {
     gl.canvas.removeEventListener("wheel", this.handleWheel);
     this.thingsToClear.forEach((it) => it.finalize());
   }
+  async createSkyBox(){
+    // Rest of initialization below
+    const textureLoader = cs380.TextureLoader.load({
+      uv_checker: 'resources/uv_checker.png',
+
+      posX: 'resources/skybox/right.jpg',
+      negX: 'resources/skybox/left.jpg',
+      posY: 'resources/skybox/top.jpg',
+      negY: 'resources/skybox/bottom.jpg',
+      posZ: 'resources/skybox/front.jpg',
+      negZ: 'resources/skybox/back.jpg',
+    });
+
+    const shaderLoader = cs380.ShaderLoader.load({
+      skyboxShader: SkyboxShader.source,
+      textureShader: TextureShader.source,
+    });
+
+    const loaderResult = await Promise.all([textureLoader, shaderLoader]);
+    const textureLoaderResult = loaderResult[0];
+    const shaderLoaderResult = loaderResult[1];
+
+    // create Skybox
+    // generate cubemap texture
+    const cubemap = new cs380.Cubemap();
+    this.thingsToClear.push(cubemap);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    cubemap.initialize([
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_X, textureLoaderResult.posX],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, textureLoaderResult.negX],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Y, textureLoaderResult.posY],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, textureLoaderResult.negY],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, textureLoaderResult.posZ],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, textureLoaderResult.negZ]
+    ]);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    const skyboxShader = new SkyboxShader();
+    this.thingsToClear.push(skyboxShader);
+    skyboxShader.initialize(shaderLoaderResult.skyboxShader);
+
+    const cubeMeshData = cs380.primitives.generateCube();
+    const skyboxMesh = cs380.Mesh.fromData(cubeMeshData);
+
+    this.thingsToClear.push(skyboxMesh);
+    this.skybox = new Skybox(skyboxMesh, skyboxShader);
+    this.skybox.uniforms.mainTexture = cubemap.id;
+
+    // Render textured cube and bunny with TextureShader
+    const textureShader = new TextureShader();
+    this.thingsToClear.push(textureShader);
+    textureShader.initialize(shaderLoaderResult.textureShader);
+
+    // create uvChecker texture
+    const uvCheckerTexture = new cs380.Texture();
+    this.thingsToClear.push(uvCheckerTexture);
+    uvCheckerTexture.initialize(textureLoaderResult.uv_checker);
+
+    //create cube
+    const cubeMesh = cs380.Mesh.fromData(cubeMeshData);
+    this.thingsToClear.push(cubeMesh);
+    this.cube = new cs380.RenderObject(cubeMesh, textureShader);
+    this.cube.uniforms.mainTexture = uvCheckerTexture.id;
+    vec3.set(this.cube.transform.localPosition, 0, 0, 0);
+  }
   async initialize() {
     // Basic setup for camera
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 100);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 110);
     mat4.perspective(
       this.camera.projectionMatrix,
       (45 * Math.PI) / 180,
@@ -1237,12 +1366,18 @@ export default class Assignment4 extends cs380.BaseApp {
       0.01,
       1000
       );
-
+    const orbitControlCenter = vec3.fromValues(0, 0, 0);
+    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
+      this.camera,
+      orbitControlCenter
+    );
+    
     this.width = width;
     this.height = height;
-
+    
     // Rest of initialization below
     this.thingsToClear = [];
+    this.thingsToClear.push(this.simpleOrbitControl);
 
     this.photo = new PhotoFilm()
     await this.photo.initialize(width, height);
@@ -1267,13 +1402,16 @@ export default class Assignment4 extends cs380.BaseApp {
     // Construct Animation
     await this.constructAnimation();
 
+    // Construct SkyBox
+    await this.createSkyBox();
+
+    this.assignment1Image = new Pip();
+    this.thingsToClear.push(this.assignment1Image);
+    await this.assignment1Image.initialize(width, height, 
+      vec3.fromValues(0.0, 0.0, this.planeZ / 2),
+      vec3.fromValues(this.planeX, this.planeY, 1.0))
+    
     // SimpleOrbitControl && Toon Shading
-    const orbitControlCenter = vec3.fromValues(0, -this.planeY / 2, 0);
-    this.simpleOrbitControl = new cs380.utils.SimpleOrbitControl(
-      this.camera,
-      orbitControlCenter
-    );
-    this.thingsToClear.push(this.simpleOrbitControl);
     this.isToonShading = false;
 
     // GL settings
@@ -1292,8 +1430,10 @@ export default class Assignment4 extends cs380.BaseApp {
       this.simpleOrbitControl.update(dt);
     this.updateAnimation(elapsed);
 
-    quat.rotateY(this.lights[3].transform.localRotation, this.lightHouseLightInitRotation, -Math.abs(Math.cos(elapsed)))
-    
+    quat.rotateY(this.lights[3].transform.localRotation, this.lightHouseLightInitRotation, -Math.abs(Math.cos(elapsed)) + 0.5)
+
+    // Update Frame Buffer
+
     // OPTIONAL: render PickableObject to the picking buffer here
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingBuffer.fbo);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -1326,6 +1466,7 @@ export default class Assignment4 extends cs380.BaseApp {
   renderScene() {
     // TODO: render scene *without* any effect
     // It would consist of every render(...) calls of objects in the scene
+    this.skybox.render(this.camera)
     for(let i = 0; i < this.objectList.length; i++){
       const obj = this.objectList[i]
       obj.render(this.camera)

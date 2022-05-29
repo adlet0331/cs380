@@ -7,6 +7,10 @@ import { SolidShader } from "../solid_shader.js";
 import { VertexColorShader } from "../vertex_color_shader.js";
 
 export default class Assignment1 extends cs380.BaseApp {
+  setFrameBufferObj(fbo) {
+    this.currfbo = fbo;
+  }
+
   async initialize() {
     // Basic setup for camera
     const aspectRatio = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -21,15 +25,15 @@ export default class Assignment1 extends cs380.BaseApp {
         -2,
         +2
     );
-    document.getElementById("settings").innerHTML = `
-      <h3>Basic requirements</h3>
-      <ul>
-        <li>Add a background with color gradient</li>
-        <li>Add 2 or more types of fractal-like natural objects</li>
-        <li>Add framerate-independent natural animation</li>
-        <li>Show some creativity in your scene</li>
-      </ul>
-    `;
+    // document.getElementById("settings").innerHTML = `
+    //   <h3>Basic requirements</h3>
+    //   <ul>
+    //     <li>Add a background with color gradient</li>
+    //     <li>Add 2 or more types of fractal-like natural objects</li>
+    //     <li>Add framerate-independent natural animation</li>
+    //     <li>Show some creativity in your scene</li>
+    //   </ul>
+    // `;
 
     // Rest of initialization below
     this.backmesh = new cs380.Mesh();
@@ -58,6 +62,8 @@ export default class Assignment1 extends cs380.BaseApp {
     this.frostObjectsInfo = [];
     this.treeFlag = [0, 0, 0];
     this.solidshader = await cs380.buildShader(SolidShader);
+
+    this.currfbo = null
   }
   buildTriangle = (mesh, centerx, centery, radius, additangle) => {
     const angle = 2 * Math.PI / 3
@@ -218,8 +224,9 @@ export default class Assignment1 extends cs380.BaseApp {
     // Finalize WebGL objects (mesh, shader, texture, ...)
     this.backmesh.finalize();
     this.vertexColorShader.finalize();
+    this.solidshader.finalize();
   }
-  update(elapsed, dt) {
+  update(elapsed, dt, fbo = null) {
     // Updates before rendering here
     const makeSnowRandomly = () => {
       const is_make = Math.random()
@@ -254,7 +261,7 @@ export default class Assignment1 extends cs380.BaseApp {
       this.addTree(10, 0, -2, 0.02, 0.5, "AAFFFF", this.random_angle, 1.5 * elapsed - this.beforeLength, 1)
     }
     // Clear canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.clearColor(0, 0, 0, 0.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -299,5 +306,7 @@ export default class Assignment1 extends cs380.BaseApp {
 
       obj.render(this.camera)
     }
+    
+    return this.currfbo
   }
 } 
