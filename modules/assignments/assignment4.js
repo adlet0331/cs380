@@ -7,10 +7,6 @@ import { Skybox, SkyboxShader } from "../skybox_shader.js";
 
 import { LightType, Light, BlinnPhongShader, Material } from "../blinn_phong.js";
 
-import { SimpleShader } from "../simple_shader.js"
-import { SolidShader } from "../solid_shader.js"
-import { VertexColorShader } from "../vertex_color_shader.js";
-
 import { Transform } from "../cs380/transform.js";
 
 import { UnlitTextureShader } from "../unlit_texture_shader.js";
@@ -187,7 +183,7 @@ class Pip {
 
     const planeMeshData = cs380.primitives.generatePlane(1,1);
     const planeMesh = cs380.Mesh.fromData(planeMeshData);
-    const shader = await cs380.buildShader(SimpleShader);
+    const shader = await cs380.buildShader(TextureShader);
     
     this.transform = new cs380.Transform();
     quat.rotateY(this.transform.localRotation, quat.create(), Math.PI);
@@ -207,6 +203,7 @@ class Pip {
 
   render(camera) {
     //const prevDepthFunc = gl.getParameter(gl.DEPTH_FUNC);
+    //gl.depthFunc(gl.ALWAYS);
     this.image.render(camera);
     //gl.depthFunc(prevDepthFunc);
   }
@@ -1405,9 +1402,12 @@ export default class Assignment4 extends cs380.BaseApp {
     // Construct SkyBox
     await this.createSkyBox();
 
-    this.assignment1Image = new Pip();
-    this.thingsToClear.push(this.assignment1Image);
-    await this.assignment1Image.initialize(width, height, 
+    this.Ass1 = await new Assignment1();
+    await this.Ass1.initialize()
+
+    this.animatedBackground = new Pip();
+    this.thingsToClear.push(this.animatedBackground);
+    await this.animatedBackground.initialize(width, height, 
       vec3.fromValues(0.0, 0.0, this.planeZ / 2),
       vec3.fromValues(this.planeX, this.planeY, 1.0))
     
@@ -1456,6 +1456,7 @@ export default class Assignment4 extends cs380.BaseApp {
     }
 
     // Render effect-applied scene to the screen
+    this.Ass1.update(elapsed, dt, this.animatedBackground.framebuffer.fbo)
     this.renderImage(null);
 
     // Photos are rendered at the very last
@@ -1467,6 +1468,7 @@ export default class Assignment4 extends cs380.BaseApp {
     // TODO: render scene *without* any effect
     // It would consist of every render(...) calls of objects in the scene
     this.skybox.render(this.camera)
+    this.animatedBackground.render(this.camera)
     for(let i = 0; i < this.objectList.length; i++){
       const obj = this.objectList[i]
       obj.render(this.camera)
