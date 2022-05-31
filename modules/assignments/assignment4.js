@@ -1290,12 +1290,12 @@ export default class Assignment4 extends cs380.BaseApp {
     const textureLoader = cs380.TextureLoader.load({
       uv_checker: 'resources/uv_checker.png',
 
-      posX: 'resources/skybox/right.jpg',
-      negX: 'resources/skybox/left.jpg',
-      posY: 'resources/skybox/top.jpg',
-      negY: 'resources/skybox/bottom.jpg',
-      posZ: 'resources/skybox/front.jpg',
-      negZ: 'resources/skybox/back.jpg',
+      posX: 'resources/skybox/night_left.png',
+      negX: 'resources/skybox/night_right.png',
+      posY: 'resources/skybox/night_top.png',
+      negY: 'resources/skybox/night_bottom.png',
+      posZ: 'resources/skybox/night_front.png',
+      negZ: 'resources/skybox/night_back.png',
     });
 
     const shaderLoader = cs380.ShaderLoader.load({
@@ -1473,12 +1473,6 @@ export default class Assignment4 extends cs380.BaseApp {
       const obj = this.objectList[i]
       obj.render(this.camera)
     }
-    /* Example code
-    this.skybox.render(this.camera);
-    this.animatedBackground.render(this.camera);
-    this.avatar.render(this.camera);
-    ...
-    */
   }
 
   renderImage(fbo = null, width = null, height = null) {
