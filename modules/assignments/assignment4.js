@@ -581,8 +581,8 @@ export default class Assignment4 extends cs380.BaseApp {
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
     // ArcBall Cube
-    this.ArcBallAttatchedCube = await this.generateMesh(arcBallCube , "#FF0000", 7, null, blinnPhongShader, this.lights);
-    vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, -this.planeY / 2 + 10, 10)
+    // this.ArcBallAttatchedCube = await this.generateMesh(arcBallCube , "#FF0000", 7, null, blinnPhongShader, this.lights);
+    // vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, -this.planeY / 2 + 10, 10)
   }
   async constructHTML(){
     document.getElementById("settings").innerHTML = `
@@ -711,7 +711,7 @@ export default class Assignment4 extends cs380.BaseApp {
     this.Idx2ArcTransform.push(this.rightArmjoint);
     this.Idx2ArcTransform.push(this.leftLegUpjoint.transform);
     this.Idx2ArcTransform.push(this.rightLegUpjoint.transform);
-    this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
+    //this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "jump", "swim"]
