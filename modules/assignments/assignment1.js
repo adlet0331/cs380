@@ -88,7 +88,6 @@ export default class Assignment1 extends cs380.BaseApp {
   }
   buildSnow = (N, radius, firstRadius) => {
     this.snowmesh = new cs380.Mesh();
-    this.snowmesh.finalize();
     this.snowmesh.addAttribute(3); // position
 
     this.buildTriangle(this.snowmesh, 0, 0, radius * firstRadius, 0)
@@ -163,7 +162,6 @@ export default class Assignment1 extends cs380.BaseApp {
   }
   buildTree = (N, sx, sy, inithwidth, initLength, drawLength, randomangleadd, code) => {
     this.frostmesh = new cs380.Mesh();
-    this.frostmesh.finalize();
     this.frostmesh.addAttribute(3); //position
     let info = {}
     info['x'] = sx
@@ -223,6 +221,8 @@ export default class Assignment1 extends cs380.BaseApp {
   finalize() {
     // Finalize WebGL objects (mesh, shader, texture, ...)
     this.backmesh.finalize();
+    this.frostmesh.finalize();
+    this.snowmesh.finalize();
     this.vertexColorShader.finalize();
     this.solidshader.finalize();
   }
@@ -230,7 +230,7 @@ export default class Assignment1 extends cs380.BaseApp {
     // Updates before rendering here
     const makeSnowRandomly = () => {
       const is_make = Math.random()
-      if (is_make > 0.5)
+      if (is_make > 0.1)
         return;
 
       let r = Math.random() * 0.1 + 0.02
@@ -262,12 +262,13 @@ export default class Assignment1 extends cs380.BaseApp {
     }
     // Clear canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.clearColor(0, 0, 0, 0.0);
+    gl.disable(gl.CULL_FACE)
+    gl.clearColor(0, 0, 0, 0.0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    
     // Rest of rendering below
     this.background.render(this.camera);
     
@@ -298,15 +299,14 @@ export default class Assignment1 extends cs380.BaseApp {
     }
     this.snowObjects = new_snowobjects;
     this.snowObjectsInfo = new_snowInfos;
-
+    
     // Tree
     for(let i=0; i<this.frostObjects.length; i++){
       const obj = this.frostObjects[i]
       cs380.utils.hexToRGB(obj.uniforms.mainColor, this.frostcolorlist[Math.floor((elapsed / 0.05 + i * 10) % 20)])
-
+      
       obj.render(this.camera)
     }
     
-    return this.currfbo
   }
 } 
