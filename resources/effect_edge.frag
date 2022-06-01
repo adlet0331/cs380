@@ -29,11 +29,16 @@ void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
 }
 
 void main() {
-	if (camera_mode == 1){ // Color Inversion
+	if (camera_mode == 0){
+		output_color = vec4(texture(mainTexture, uv).rgb, 1.0);
+	}
+	else if (camera_mode == 1){ // Color Inversion
 		output_color = vec4(vec3(1.0, 1.0, 1.0) - texture(mainTexture, uv).rgb, 1.0);
 	}
 	else if (camera_mode == 2){ // Grayscale
-		output_color = vec4(vec3(1.0, 1.0, 1.0) * length(texture(mainTexture, uv).rgb), 1.0);
+		vec3 origin_color = texture(mainTexture, uv).rgb;
+		float gray_scale = dot(origin_color, vec3(0.299, 0.587, 0.114));
+		output_color = vec4(vec3(1.0, 1.0, 1.0) * gray_scale, 1.0);
 	}
 	else if (camera_mode == 3){ // Blurring
 		vec4 n[9];
@@ -55,5 +60,6 @@ void main() {
 
 		output_color = vec4(1.0 - grad_mag.rgb, 1.0);
 	}
+	return;
 }
 

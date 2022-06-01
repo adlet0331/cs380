@@ -78,7 +78,7 @@ class PhotoFilm {
   update(elapsed) {
     if (!this.enabled) return;
     const time = elapsed - this.showStartTime;
-    let yPos = 2 - Math.min(2, time * 0.8);
+    let yPos = 2 - Math.min(2, time * 2.8); //TODO : NEED TO CHANGE TO 0.8
     this.transform.localPosition[1] = yPos;
 
     this.printFinished = yPos < 0.001;
@@ -1437,6 +1437,8 @@ export default class Assignment4 extends cs380.BaseApp {
     this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
 
     this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3}
+    this.cameraShader = await cs380.buildShader(PipEdgeShader);
+    this.spareBuffer = new Framebuffer()
     // Build Scene Models
     await this.buildModels();
 
@@ -1515,10 +1517,7 @@ export default class Assignment4 extends cs380.BaseApp {
 
     // Render effect-applied scene to the screen
     this.Ass1.update(elapsed, dt, this.animatedBackground.framebuffer.fbo)
-    this.renderImage(null);
-    if (this.cameraEffect != 'none'){
-      this.renderImage(this.cameraEffectPlane.framebuffer.fbo)
-    }
+    this.renderImage(this.cameraEffectPlane.framebuffer.fbo);
 
     // Photos are rendered at the very last
     this.photo.update(elapsed);
@@ -1544,46 +1543,40 @@ export default class Assignment4 extends cs380.BaseApp {
 
     if (!width) width = this.width;
     if (!height) height = this.height;
-    if (this.cameraEffect == 'None') {
-      // no camera effect - render directly to the scene
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      gl.clearDepth(1.0);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LESS);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // TODO: render the scene with some camera effect to the target framebuffer object (fbo)
+    // Write at least one camera effect shader, which takes a rendered texture and draws modified version of the given texture
+    //
+    // Step-by-step guide:
+    //  1) Bind a separate framebuffer that you initialized beforehand
+    //  2) Render the scene to the framebuffer
+    //    - You probably need to use this.renderScene() here
+    //    - If the width/height differ from the target framebuffer, use gl.viewPort(..)
+    //  3) Bind a target framebuffer (fbo)
+    //  4) Render a plane that fits the viewport with a camera effect shader
+    //    - The plane should perfectly fit the viewport regardless of the camera movement (similar to skybox)
+    //    - You may change the shader for a RenderObject like below:
+    //        this.my_object.render(this.camera, *my_camera_effect_shader*)
 
-      this.renderScene();
-    } else {
-      // TODO: render the scene with some camera effect to the target framebuffer object (fbo)
-      // Write at least one camera effect shader, which takes a rendered texture and draws modified version of the given texture
-      //
-      // Step-by-step guide:
-      //  1) Bind a separate framebuffer that you initialized beforehand
-      //  2) Render the scene to the framebuffer
-      //    - You probably need to use this.renderScene() here
-      //    - If the width/height differ from the target framebuffer, use gl.viewPort(..)
-      //  3) Bind a target framebuffer (fbo)
-      //  4) Render a plane that fits the viewport with a camera effect shader
-      //    - The plane should perfectly fit the viewport regardless of the camera movement (similar to skybox)
-      //    - You may change the shader for a RenderObject like below:
-      //        this.my_object.render(this.camera, *my_camera_effect_shader*)
+    // TODO: Remove the following line after you implemented.
+    // (and please, remove any console.log(..) within the update loop from your submission)
 
-      // TODO: Remove the following line after you implemented.
-      // (and please, remove any console.log(..) within the update loop from your submission)
+    // Below codes will do no effectl it just renders the scene. You may (should?) delete this.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.viewport(0, 0, width, height);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    this.renderScene();
 
-      // Below codes will do no effectl it just renders the scene. You may (should?) delete this.
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      gl.clearDepth(1.0);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LESS);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-      this.renderScene();
-      this.cameraEffectPlane.render(this.camera);
-    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, width, height);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    this.cameraEffectPlane.render(this.camera);
   }
 }
