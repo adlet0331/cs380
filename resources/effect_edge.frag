@@ -29,8 +29,20 @@ void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
 }
 
 void main() {
-	if (camera_mode == 1){
+	if (camera_mode == 1){ // Color Inversion
 		output_color = vec4(vec3(1.0, 1.0, 1.0) - texture(mainTexture, uv).rgb, 1.0);
+	}
+	else if (camera_mode == 2){ // Grayscale
+		output_color = vec4(vec3(1.0, 1.0, 1.0) * length(texture(mainTexture, uv).rgb), 1.0);
+	}
+	else if (camera_mode == 3){ // Blurring
+		vec4 n[9];
+		pixels_3by3(n, mainTexture, uv);
+		vec4 mean_color;
+		for (int i = 0; i < 9; i++){
+			mean_color += n[i] / 9.0;
+		}
+		output_color = vec4(mean_color.rgb, 1.0);
 	}
 	else{
 		vec4 n[9];
