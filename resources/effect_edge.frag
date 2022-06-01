@@ -8,6 +8,7 @@ out vec4 output_color;
 uniform sampler2D mainTexture;
 uniform float width;
 uniform float height;
+uniform int camera_mode;
 
 void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
 {
@@ -28,14 +29,19 @@ void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
 }
 
 void main() {
-	vec4 n[9];
-	pixels_3by3(n, mainTexture, uv);
+	if (camera_mode == 1){
+		output_color = vec4(vec3(1.0, 1.0, 1.0) - texture(mainTexture, uv).rgb, 1.0);
+	}
+	else{
+		vec4 n[9];
+		pixels_3by3(n, mainTexture, uv);
 
-	//TODO: calculate magnitude of sobel gradient
-	vec4 grad_x = n[0] - n[2] + 2.0f * n[3] - 2.0f * n[5] + n[6] - n[8];
-	vec4 grad_y = n[0] + 2.0f * n[1] + n[2] - n[6] - 2.0f * n[7] - n[8];
-	vec4 grad_mag = sqrt(grad_x * grad_x + grad_y * grad_y); //put "magnitude of gradient" to grad_mag correctly.
-	
-	output_color = vec4(1.0 - grad_mag.rgb, 1.0);
+		//TODO: calculate magnitude of sobel gradient
+		vec4 grad_x = n[0] - n[2] + 2.0f * n[3] - 2.0f * n[5] + n[6] - n[8];
+		vec4 grad_y = n[0] + 2.0f * n[1] + n[2] - n[6] - 2.0f * n[7] - n[8];
+		vec4 grad_mag = sqrt(grad_x * grad_x + grad_y * grad_y); //put "magnitude of gradient" to grad_mag correctly.
+
+		output_color = vec4(1.0 - grad_mag.rgb, 1.0);
+	}
 }
 

@@ -256,6 +256,13 @@ export default class Assignment4 extends cs380.BaseApp {
       this.objectList[i].uniforms. material.isToonShading = this.isToonShading;
     }
   }
+  updateCameraEffect = (cameraMode) => {
+    this.cameraEffect = cameraMode
+    console.log(cameraMode)
+    let camera_mode_int = this.cameraModeMap[cameraMode]
+    console.log(camera_mode_int)
+    this.cameraEffectPlane.image.uniforms.camera_mode = camera_mode_int
+  }
   setUniforms = (uniforms, ambientC = "#FFFFFF", diffuseC = "#FFFFFF", specularC = "#FFFFFF", mainC = "#FFFFFF") => {
     uniforms.mainColor = vec3.create();
     cs380.utils.hexToRGB(uniforms.mainColor, mainC);
@@ -653,10 +660,10 @@ export default class Assignment4 extends cs380.BaseApp {
     <!-- TODO: Add camera effect lists here --> 
     <label for="setting-effect">Camera effect</label>
     <select id="setting-effect">
-      <option value="none">None</option>
-      <option value="my-effect">1</option>
-      <option value="my-effect">2</option>
-      <option value="my-effect">3</option>
+      <option value="None">None</option>
+      <option value="ColorInversion">ColorInversion</option>
+      <option value="Grayscale">Grayscale</option>
+      <option value="Blurring">Blurring</option>
     </select> <br/>
 
     <!-- OPTIONAL: Add more UI elements here --> 
@@ -805,11 +812,13 @@ export default class Assignment4 extends cs380.BaseApp {
       shutterAudio.play();
     };
 
-    this.camereEffect = 'none';
+    this.cameraEffect = 'None';
     cs380.utils.setInputBehavior(
       'setting-effect',
-      (val) => { this.camereEffect = val; },
-      true,
+      (val) => {
+        this.updateCameraEffect(val);
+      },
+      false,
       false
     );
   }
@@ -1426,6 +1435,8 @@ export default class Assignment4 extends cs380.BaseApp {
     this.pickingBuffer = new cs380.PickingBuffer();
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
+
+    this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3}
     // Build Scene Models
     await this.buildModels();
 
@@ -1533,7 +1544,7 @@ export default class Assignment4 extends cs380.BaseApp {
 
     if (!width) width = this.width;
     if (!height) height = this.height;
-    if (this.camereEffect == 'none') {
+    if (this.cameraEffect == 'None') {
       // no camera effect - render directly to the scene
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
       gl.viewport(0, 0, width, height);
