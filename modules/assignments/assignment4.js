@@ -449,7 +449,7 @@ export default class Assignment4 extends cs380.BaseApp {
     vec3.set(this.bunny.transform.localScale, 5, 5, 5);
 
     this.lighthouse = await this.generateMesh(lighthouseMesh, "#362B00", 0, null, blinnPhongShader, this.lights);
-    vec3.set(this.lighthouse.transform.localPosition, 25.0, -this.planeY / 2, 0.0);
+    vec3.set(this.lighthouse.transform.localPosition, 25.0, -this.planeY / 2 + 0.1, 0.0);
     vec3.set(this.lighthouse.transform.localScale, 0.02, 0.02, 0.02);
     quat.rotateX(this.lighthouse.transform.localRotation, this.lighthouse.transform.localRotation, -Math.PI / 2);
 
@@ -1517,8 +1517,8 @@ export default class Assignment4 extends cs380.BaseApp {
 
     // Render effect-applied scene to the screen
     this.Ass1.update(elapsed, dt, this.animatedBackground.framebuffer.fbo)
-    this.renderImage(this.cameraEffectPlane.framebuffer.fbo);
-
+    this.renderImage(null);
+    
     // Photos are rendered at the very last
     this.photo.update(elapsed);
     this.photo.render(this.camera);
@@ -1561,7 +1561,7 @@ export default class Assignment4 extends cs380.BaseApp {
     // (and please, remove any console.log(..) within the update loop from your submission)
 
     // Below codes will do no effectl it just renders the scene. You may (should?) delete this.
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.cameraEffectPlane.framebuffer.fbo);
     gl.viewport(0, 0, width, height);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
@@ -1570,7 +1570,7 @@ export default class Assignment4 extends cs380.BaseApp {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.renderScene();
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.viewport(0, 0, width, height);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
