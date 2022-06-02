@@ -1438,7 +1438,6 @@ export default class Assignment4 extends cs380.BaseApp {
 
     this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3}
     this.cameraShader = await cs380.buildShader(PipEdgeShader);
-    this.spareBuffer = new Framebuffer()
     // Build Scene Models
     await this.buildModels();
 
