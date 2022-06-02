@@ -250,9 +250,12 @@ class CameraEffectPip {
   }
 }
 export default class Assignment4 extends cs380.BaseApp {
-  updateUniforms = () => {
+  updateUniforms = (time) => {
+    //console.log(this.isToonShading, this.isPerlinNoise, time);
     for (let i = 0; i < this.objectList.length; i++){
-      this.objectList[i].uniforms. material.isToonShading = this.isToonShading;
+      this.objectList[i].uniforms.material.isToonShading = this.isToonShading;
+      this.objectList[i].uniforms.material.isPerlinNoise = this.isPerlinNoise;
+      this.objectList[i].uniforms.material.time = time;
     }
   }
   updateCameraEffect = (cameraMode) => {
@@ -270,6 +273,8 @@ export default class Assignment4 extends cs380.BaseApp {
     cs380.utils.hexToRGB(material.diffuseColor, diffuseC);
     cs380.utils.hexToRGB(material.specularColor, specularC);
     material.isToonShading = this.isToonShading;
+    material.isPerlinNoise = this.isPerlinNoise;
+    material.time = 0.0;
     uniforms.material = material;
   }
   animationMove(fromvect, tovect , ratio){
@@ -631,6 +636,8 @@ export default class Assignment4 extends cs380.BaseApp {
     document.getElementById("settings").innerHTML = `
       <label for="toon-shading">Toon Shading</label>
       <input type="checkbox" id="toon-shading">
+      <label for="perlin-noise">Perlin Noise</label>
+      <input type="checkbox" id="perlin-noise">
       <br/>
       <label for="setting-ambient">Ambient Light Illuminance</label>
       <input type="range" min=0 max=1 value=0.1 step=0.01 id="setting-ambient-illuminance">
@@ -724,7 +731,11 @@ export default class Assignment4 extends cs380.BaseApp {
     setInputBehavior("toon-shading", true, false, 
         () => { 
           this.isToonShading = !this.isToonShading;
-          this.updateUniforms();
+        });
+    setInputBehavior("perlin-noise", true, false, 
+        () => { 
+          this.isPerlinNoise = !this.isPerlinNoise;
+          console.log(this.isPerlinNoise);
         });
   }
   async handleSceneInput(){
@@ -1469,8 +1480,9 @@ export default class Assignment4 extends cs380.BaseApp {
       vec3.fromValues(2.0, 2.0, 1.0)
     )
     
-    // SimpleOrbitControl && Toon Shading
+    // SimpleOrbitControl && Toon Shading && Perlin Noise
     this.isToonShading = false;
+    this.isPerlinNoise = false;
 
     // GL settings
     gl.enable(gl.CULL_FACE);
@@ -1484,6 +1496,8 @@ export default class Assignment4 extends cs380.BaseApp {
   }
   update(elapsed, dt) {
     // TODO: Update objects here
+    this.updateUniforms(elapsed);
+
     if (this.SelectedObjIdx == -1)
       this.simpleOrbitControl.update(dt);
     this.updateAnimation(elapsed);

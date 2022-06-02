@@ -17,6 +17,8 @@ export class Material {
     this.diffuseColor = vec3.create();
     this.specularColor = vec3.create();
     this.isToonShading = false;
+    this.isPerlinNoise = false;
+    this.time = 0.0;
   }
 }
 
@@ -79,7 +81,7 @@ export class BlinnPhongShader extends cs380.BaseShader {
     this.setUniformVec3(kv, "mainColor", 1, 1, 1);
 
     // Materials
-    const materialProperties = ['ambientColor', 'diffuseColor', 'specularColor', 'isToonShading'];
+    const materialProperties = ['ambientColor', 'diffuseColor', 'specularColor', 'isToonShading', 'isPerlinNoise', 'time'];
     if ('material' in kv){
       const material = kv['material'];
       const getmaterial = materialProperties.reduce(
@@ -92,6 +94,8 @@ export class BlinnPhongShader extends cs380.BaseShader {
       gl.uniform3f(getmaterial.diffuseColor, ...material.diffuseColor);
       gl.uniform3f(getmaterial.specularColor, ...material.specularColor);
       gl.uniform1i(getmaterial.isToonShading, material.isToonShading);
+      gl.uniform1i(getmaterial.isPerlinNoise, material.isPerlinNoise);
+      gl.uniform1f(getmaterial.time, material.time);
     }
 
     if ('lights' in kv) {
