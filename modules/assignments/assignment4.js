@@ -78,9 +78,8 @@ class PhotoFilm {
   update(elapsed) {
     if (!this.enabled) return;
     const time = elapsed - this.showStartTime;
-    let yPos = 2 - Math.min(2, time * 2.8); //TODO : NEED TO CHANGE TO 0.8
+    let yPos = 2 - Math.min(2, time * 0.8);
     this.transform.localPosition[1] = yPos;
-
     this.printFinished = yPos < 0.001;
   }
 
