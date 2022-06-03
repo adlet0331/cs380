@@ -81,9 +81,9 @@ export class BlinnPhongShader extends cs380.BaseShader {
     this.setUniformVec3(kv, "mainColor", 1, 1, 1);
 
     // Materials
-    const materialProperties = ['ambientColor', 'diffuseColor', 'specularColor', 'isToonShading', 'isPerlinNoise', 'time'];
     if ('material' in kv){
       const material = kv['material'];
+      const materialProperties = ['ambientColor', 'diffuseColor', 'specularColor', 'isToonShading', 'isPerlinNoise', 'time'];
       const getmaterial = materialProperties.reduce(
         (obj, x) => {
           obj[x] = gl.getUniformLocation(this.program, `material.${x}`);

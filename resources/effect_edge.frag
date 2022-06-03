@@ -10,8 +10,7 @@ uniform float width;
 uniform float height;
 uniform int camera_mode;
 
-void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
-{
+void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord){
 	float w = 1.0 / width; //interval of u between two fragments pixel
 	float h = 1.0 / height; //interval of v between two fragments pixel
 
@@ -48,6 +47,9 @@ void main() {
 			mean_color += n[i] / 9.0;
 		}
 		output_color = vec4(mean_color.rgb, 1.0);
+	}
+	else if (camera_mode == 4){ // Fish Eye
+		output_color = vec4(texture(mainTexture, uv).rgb, 1.0);
 	}
 	else{
 		vec4 n[9];
