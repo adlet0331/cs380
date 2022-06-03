@@ -39,44 +39,58 @@ uniform int numLights;
 uniform Light lights[10];
 uniform Material material;
 
-float random(vec3 seed) {
-    seed = seed + vec3(123.456, 789.123, 456.789);
-    return fract(sin(dot(seed, vec3(12.9898, 78.233, 45.5432))) * 758.5453);
+float FLOOR_LENGTH = 2.0;
+
+vec2 random(vec2 seed) {
+    seed = seed + vec2(123.456, 789.123);
+    float rand = fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453);
+    return vec2(cos(rand * 3.14), sin(rand * 3.14));
 }
 
-void get4UnitGradientVect(inout vec3 n[4], inout vec3 g[4], inout vec3 point_vec){
-    point_vec[1] = 0.0;
-    float floor_num = 0.2;
-    float time = material.time;
-    float add_floor = time - floor(time / floor_num) * floor_num;
-    point_vec += vec3(add_floor, 0.0, add_floor);
-    g[0] = (floor(point_vec / floor_num) + vec3(0.0, 0.0, 0.0)) * floor_num;
-    g[1] = (floor(point_vec / floor_num) + vec3(1.0, 0.0, 0.0)) * floor_num;
-    g[2] = (floor(point_vec / floor_num) + vec3(0.0, 0.0, 1.0)) * floor_num;
-    g[3] = (floor(point_vec / floor_num) + vec3(1.0, 0.0, 1.0)) * floor_num;
+void get4RandomGradientVect(inout vec2 n[4], inout vec2 g[4], inout vec2 point_vec){
+    float time = material.time * 1.5;
+    //float add_floor = time - floor(time / FLOOR_LENGTH) * FLOOR_LENGTH;
+    //add_floor = 1.0;
+    point_vec += vec2(time, time);
+    g[0] = (floor(point_vec / FLOOR_LENGTH) + vec2(0.0, 0.0)) * FLOOR_LENGTH;
+    g[1] = (floor(point_vec / FLOOR_LENGTH) + vec2(1.0, 0.0)) * FLOOR_LENGTH;
+    g[2] = (floor(point_vec / FLOOR_LENGTH) + vec2(0.0, 1.0)) * FLOOR_LENGTH;
+    g[3] = (floor(point_vec / FLOOR_LENGTH) + vec2(1.0, 1.0)) * FLOOR_LENGTH;
 
-    vec3 random_vec = vec3(add_floor * 1.3, 0.0, add_floor * 2.1);
+    vec2 random_vec = vec2(time * 1.3, time * 0.6);
+    random_vec = vec2(0.0, 0.0);
 
-    n[0] = normalize(vec3(random(g[0] + random_vec), 0.0, random(g[0])));
-    n[1] = normalize(vec3(random(g[1] + random_vec * 2.1), 0.0, random(g[1])));
-    n[2] = normalize(vec3(random(g[2] + random_vec * 4.6), 0.0, random(g[2])));
-    n[3] = normalize(vec3(random(g[3] + random_vec * 3.2), 0.0, random(g[3])));
+    n[0] = normalize(random(g[0] + random_vec));
+    n[1] = normalize(random(g[1] + random_vec));
+    n[2] = normalize(random(g[2] + random_vec));
+    n[3] = normalize(random(g[3] + random_vec));
+ }
+
+ float interpolate(float a0, float a1, float ratio){
+     return (a1 - a0) * (3.0 - 2.0 * ratio) * ratio * ratio + a0;
  }
 
 float perlinNoise(vec3 v){ 
-    vec3 n[4];
-    vec3 g[4];
-    get4UnitGradientVect(n, g, v);
+    vec2 n[4];
+    vec2 g[4];
+    vec2 vec2d = vec2(v[0], v[2]);
+    get4RandomGradientVect(n, g, vec2d);
 
     vec3 dot_vec = vec3(0.0, 0.0, 0.0);
-    float totdist = distance(v, g[0]) + distance(v, g[1]) + distance(v, g[2]) + distance(v, g[3]);
-    dot_vec += dot((v - g[0]), n[0]);
-    dot_vec += dot((v - g[1]), n[1]);
-    dot_vec += dot((v - g[2]), n[2]);
-    dot_vec += dot((v - g[3]), n[3]);
-    float ret_value = length(dot_vec);
+    float norm_floor = FLOOR_LENGTH;
+    float dot0 = dot(vec2d - g[0], n[0]) / norm_floor;
+    float dot1 = dot(vec2d - g[1], n[1]) / norm_floor;
+    float dot2 = dot(vec2d - g[2], n[2]) / norm_floor;
+    float dot3 = dot(vec2d - g[3], n[3]) / norm_floor;
+     
+    float ratiox = (vec2d[0] - g[0][0]) / FLOOR_LENGTH;
+    float ratioz = (vec2d[1] - g[0][1]) / FLOOR_LENGTH;
 
-    return ret_value;
+    float intp1 = interpolate(dot0, dot1, ratiox);
+    float intp2 = interpolate(dot2, dot3, ratiox);
+    float ret_value = interpolate(intp1, intp2, ratioz);
+
+    return abs(ret_value);
 }
 
 void main() {
@@ -167,10 +181,7 @@ void main() {
 
     if (isPerlinNoise) {
         float perlin_intensity = perlinNoise((cameraTransform * frag_pos).xyz);
-        perlin_intensity = clamp(3.0 * pow(perlin_intensity, 2.0) - 2.0 * pow(perlin_intensity, 3.0), 0.0, 1.0);
-        intensity += intensity * (perlin_intensity - 0.0);
-
-        //intensity = vec3(1.0, 1.0, 1.0) * perlin_intensity;
+        intensity *= (1.0 - perlin_intensity);
     }
     
     output_color = vec4(intensity, 1.0f);
