@@ -8,9 +8,9 @@ out vec4 output_color;
 uniform sampler2D mainTexture;
 uniform float width;
 uniform float height;
-uniform int camera_mode;
 
-void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord){
+void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord)
+{
 	float w = 1.0 / width; //interval of u between two fragments pixel
 	float h = 1.0 / height; //interval of v between two fragments pixel
 
@@ -28,40 +28,14 @@ void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord){
 }
 
 void main() {
-	if (camera_mode == 0){
-		output_color = vec4(texture(mainTexture, uv).rgb, 1.0);
-	}
-	else if (camera_mode == 1){ // Color Inversion
-		output_color = vec4(vec3(1.0, 1.0, 1.0) - texture(mainTexture, uv).rgb, 1.0);
-	}
-	else if (camera_mode == 2){ // Grayscale
-		vec3 origin_color = texture(mainTexture, uv).rgb;
-		float gray_scale = dot(origin_color, vec3(0.299, 0.587, 0.114));
-		output_color = vec4(vec3(1.0, 1.0, 1.0) * gray_scale, 1.0);
-	}
-	else if (camera_mode == 3){ // Blurring
-		vec4 n[9];
-		pixels_3by3(n, mainTexture, uv);
-		vec4 mean_color;
-		for (int i = 0; i < 9; i++){
-			mean_color += n[i] / 9.0;
-		}
-		output_color = vec4(mean_color.rgb, 1.0);
-	}
-	else if (camera_mode == 4){ // Fish Eye
-		output_color = vec4(texture(mainTexture, uv).rgb, 1.0);
-	}
-	else{
-		vec4 n[9];
-		pixels_3by3(n, mainTexture, uv);
+	vec4 n[9];
+	pixels_3by3(n, mainTexture, uv);
 
-		//TODO: calculate magnitude of sobel gradient
-		vec4 grad_x = n[0] - n[2] + 2.0f * n[3] - 2.0f * n[5] + n[6] - n[8];
-		vec4 grad_y = n[0] + 2.0f * n[1] + n[2] - n[6] - 2.0f * n[7] - n[8];
-		vec4 grad_mag = sqrt(grad_x * grad_x + grad_y * grad_y); //put "magnitude of gradient" to grad_mag correctly.
-
-		output_color = vec4(1.0 - grad_mag.rgb, 1.0);
-	}
-	return;
+	//TODO: calculate magnitude of sobel gradient
+	vec4 grad_x = n[0] - n[2] + 2.0f * n[3] - 2.0f * n[5] + n[6] - n[8];
+	vec4 grad_y = n[0] + 2.0f * n[1] + n[2] - n[6] - 2.0f * n[7] - n[8];
+	vec4 grad_mag = sqrt(grad_x * grad_x + grad_y * grad_y); //put "magnitude of gradient" to grad_mag correctly.
+	
+	output_color = vec4(1.0 - grad_mag.rgb, 1.0);
 }
 

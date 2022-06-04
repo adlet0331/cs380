@@ -24,8 +24,7 @@ export class PipEdgeShader extends cs380.BaseShader {
       useColor: gl.getUniformLocation(this.program, "useColor"),
       useScreenSpace: gl.getUniformLocation(this.program, "useScreenSpace"),
       width: gl.getUniformLocation(this.program, 'width'),
-      height: gl.getUniformLocation(this.program, 'height'),
-      camera_mode: gl.getUniformLocation(this.program, "camera_mode")
+      height: gl.getUniformLocation(this.program, 'height')
 
     };
   }
@@ -39,7 +38,6 @@ export class PipEdgeShader extends cs380.BaseShader {
     this.setUniformTexture(kv, "mainTexture", 0);
     this.setUniformVec3(kv, "solidColor", 1, 1, 1);
     this.setUniformInt(kv, "useColor", 0);
-    this.setUniformInt(kv, "camera_mode", 0);
     this.setUniformInt(kv, "useScreenSpace", 0);
     this.setUniformFloat(kv, 'width', 0);
     this.setUniformFloat(kv, 'height', 0);
