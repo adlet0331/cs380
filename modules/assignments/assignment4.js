@@ -10,7 +10,7 @@ import { LightType, Light, BlinnPhongShader, Material } from "../blinn_phong.js"
 import { Transform } from "../cs380/transform.js";
 
 import { UnlitTextureShader } from "../unlit_texture_shader.js";
-import { PipEdgeShader } from "../pip_edge_shader.js";
+import { MyShader } from "../my_shader.js";
 import Assignment1 from "./assignment1.js";
 
 class PhotoFilm {
@@ -219,7 +219,7 @@ class CameraEffectPip {
 
     const planeMeshData = cs380.primitives.generatePlane(1,1);
     const planeMesh = cs380.Mesh.fromData(planeMeshData);
-    const shader = await cs380.buildShader(PipEdgeShader);
+    const shader = await cs380.buildShader(MyShader);
     
     this.transform = new cs380.Transform();
     quat.rotateY(this.transform.localRotation, quat.create(), Math.PI);
