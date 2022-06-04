@@ -255,6 +255,7 @@ export default class Assignment4 extends cs380.BaseApp {
     for (let i = 0; i < this.objectList.length; i++){
       this.objectList[i].uniforms.material.isToonShading = this.isToonShading;
       this.objectList[i].uniforms.material.isPerlinNoise = this.isPerlinNoise;
+      this.objectList[i].uniforms.material.perlin_area_size = this.perlin_area_size;      
       this.objectList[i].uniforms.material.time = time;
     }
   }
@@ -274,6 +275,7 @@ export default class Assignment4 extends cs380.BaseApp {
     cs380.utils.hexToRGB(material.specularColor, specularC);
     material.isToonShading = this.isToonShading;
     material.isPerlinNoise = this.isPerlinNoise;
+    material.perlin_area_size = this.perlin_area_size;
     material.time = 0.0;
     uniforms.material = material;
   }
@@ -656,6 +658,8 @@ export default class Assignment4 extends cs380.BaseApp {
       <br/>
       <label for="setting-spotlight-smooth">SpotLight smooth</label>
       <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
+      <label for="perlin-area-size">Perlin Area Size</label>
+      <input type="range" min=0.1 max=10 value=1 step=0.01 id="perlin-area-size">
       <br/>
     <!-- Camera shutter UI --> 
     <audio id="shutter-sfx">
@@ -735,7 +739,10 @@ export default class Assignment4 extends cs380.BaseApp {
     setInputBehavior("perlin-noise", true, false, 
         () => { 
           this.isPerlinNoise = !this.isPerlinNoise;
-          console.log(this.isPerlinNoise);
+        });
+    setInputBehavior("perlin-area-size", true, true, 
+        (val) => { 
+          this.perlin_area_size = val;
         });
   }
   async handleSceneInput(){
@@ -1483,6 +1490,7 @@ export default class Assignment4 extends cs380.BaseApp {
     // SimpleOrbitControl && Toon Shading && Perlin Noise
     this.isToonShading = false;
     this.isPerlinNoise = false;
+    this.perlin_area_size = 1.0;
 
     // GL settings
     gl.enable(gl.CULL_FACE);

@@ -21,6 +21,7 @@ struct Material {
     vec3 specularColor;
     bool isToonShading;
     bool isPerlinNoise;
+    float perlin_area_size;
     float time;
 };
 
@@ -39,56 +40,71 @@ uniform int numLights;
 uniform Light lights[10];
 uniform Material material;
 
-float FLOOR_LENGTH = 2.0;
-
-vec2 random(vec2 seed) {
-    seed = seed + vec2(123.456, 789.123);
-    float rand = fract(sin(dot(seed, vec2(12.9898, 78.233))) * 43758.5453);
-    return vec2(cos(rand * 3.14), sin(rand * 3.14));
+vec3 random(vec3 seed) {
+    seed = seed + vec3(123.456, 789.123, 456.789);
+    float rand = fract(sin(dot(seed, vec3(12.9898, 78.233, 32.847))) * 43758.5453);
+    float rand2 = fract(cos(dot(seed, vec3(31.1212, 52.723, 51.036))) * 13574.1954);
+    return vec3(cos(rand * 3.14) * cos(rand2 * 3.14), sin(rand * 3.14) * cos(rand2 * 3.14), sin(rand2 * 3.14));
 }
 
-void get4RandomGradientVect(inout vec2 n[4], inout vec2 g[4], inout vec2 point_vec){
+void get4RandomGradientVect(inout vec3 n[8], inout vec3 g[8], inout vec3 point_vec){
     float time = material.time * 1.5;
-    //float add_floor = time - floor(time / FLOOR_LENGTH) * FLOOR_LENGTH;
+    float perlin_area_size = material.perlin_area_size;
+    //float add_floor = time - floor(time / perlin_area_size) * perlin_area_size;
     //add_floor = 1.0;
-    point_vec += vec2(time, time);
-    g[0] = (floor(point_vec / FLOOR_LENGTH) + vec2(0.0, 0.0)) * FLOOR_LENGTH;
-    g[1] = (floor(point_vec / FLOOR_LENGTH) + vec2(1.0, 0.0)) * FLOOR_LENGTH;
-    g[2] = (floor(point_vec / FLOOR_LENGTH) + vec2(0.0, 1.0)) * FLOOR_LENGTH;
-    g[3] = (floor(point_vec / FLOOR_LENGTH) + vec2(1.0, 1.0)) * FLOOR_LENGTH;
+    point_vec += vec3(time, time, time);
+    g[0] = (floor(point_vec / perlin_area_size) + vec3(0.0, 0.0, 0.0)) * perlin_area_size;
+    g[1] = (floor(point_vec / perlin_area_size) + vec3(1.0, 0.0, 0.0)) * perlin_area_size;
+    g[2] = (floor(point_vec / perlin_area_size) + vec3(0.0, 1.0, 0.0)) * perlin_area_size;
+    g[3] = (floor(point_vec / perlin_area_size) + vec3(1.0, 1.0, 0.0)) * perlin_area_size;
+    g[4] = (floor(point_vec / perlin_area_size) + vec3(0.0, 0.0, 1.0)) * perlin_area_size;
+    g[5] = (floor(point_vec / perlin_area_size) + vec3(1.0, 0.0, 1.0)) * perlin_area_size;
+    g[6] = (floor(point_vec / perlin_area_size) + vec3(0.0, 1.0, 1.0)) * perlin_area_size;
+    g[7] = (floor(point_vec / perlin_area_size) + vec3(1.0, 1.0, 1.0)) * perlin_area_size;
 
-    vec2 random_vec = vec2(time * 1.3, time * 0.6);
-    random_vec = vec2(0.0, 0.0);
-
-    n[0] = normalize(random(g[0] + random_vec));
-    n[1] = normalize(random(g[1] + random_vec));
-    n[2] = normalize(random(g[2] + random_vec));
-    n[3] = normalize(random(g[3] + random_vec));
+    n[0] = random(g[0]);
+    n[1] = random(g[1]);
+    n[2] = random(g[2]);
+    n[3] = random(g[3]);
+    n[4] = random(g[4]);
+    n[5] = random(g[5]);
+    n[6] = random(g[6]);
+    n[7] = random(g[7]);
  }
 
  float interpolate(float a0, float a1, float ratio){
      return (a1 - a0) * (3.0 - 2.0 * ratio) * ratio * ratio + a0;
  }
 
-float perlinNoise(vec3 v){ 
-    vec2 n[4];
-    vec2 g[4];
-    vec2 vec2d = vec2(v[0], v[2]);
-    get4RandomGradientVect(n, g, vec2d);
+float perlinNoise(vec3 vec){ 
+    vec3 n[8];
+    vec3 g[8];
+    get4RandomGradientVect(n, g, vec);
 
     vec3 dot_vec = vec3(0.0, 0.0, 0.0);
-    float norm_floor = FLOOR_LENGTH;
-    float dot0 = dot(vec2d - g[0], n[0]) / norm_floor;
-    float dot1 = dot(vec2d - g[1], n[1]) / norm_floor;
-    float dot2 = dot(vec2d - g[2], n[2]) / norm_floor;
-    float dot3 = dot(vec2d - g[3], n[3]) / norm_floor;
-     
-    float ratiox = (vec2d[0] - g[0][0]) / FLOOR_LENGTH;
-    float ratioz = (vec2d[1] - g[0][1]) / FLOOR_LENGTH;
+    float norm_floor = material.perlin_area_size;
+    float dot0 = dot(vec - g[0], n[0]) / norm_floor;
+    float dot1 = dot(vec - g[1], n[1]) / norm_floor;
+    float dot2 = dot(vec - g[2], n[2]) / norm_floor;
+    float dot3 = dot(vec - g[3], n[3]) / norm_floor;
+    float dot4 = dot(vec - g[4], n[4]) / norm_floor;
+    float dot5 = dot(vec - g[5], n[5]) / norm_floor;
+    float dot6 = dot(vec - g[6], n[6]) / norm_floor;
+    float dot7 = dot(vec - g[7], n[7]) / norm_floor;
 
-    float intp1 = interpolate(dot0, dot1, ratiox);
-    float intp2 = interpolate(dot2, dot3, ratiox);
-    float ret_value = interpolate(intp1, intp2, ratioz);
+    float ratiox = (vec[0] - g[0][0]) / norm_floor;
+    float ratioy = (vec[1] - g[0][1]) / norm_floor;
+    float ratioz = (vec[2] - g[0][2]) / norm_floor;
+
+    float intpx1 = interpolate(dot0, dot1, ratiox);
+    float intpx2 = interpolate(dot2, dot3, ratiox);
+    float intpx3 = interpolate(dot4, dot5, ratiox);
+    float intpx4 = interpolate(dot6, dot7, ratiox);
+
+    float intpy1 = interpolate(intpx1, intpx2, ratioy);
+    float intpy2 = interpolate(intpx3, intpx4, ratioy);
+
+    float ret_value = interpolate(intpy1, intpy2, ratioz);
 
     return abs(ret_value);
 }
