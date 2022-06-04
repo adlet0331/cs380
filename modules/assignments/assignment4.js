@@ -217,7 +217,7 @@ class CameraEffectPip {
     this.framebuffer = new Framebuffer();
     this.framebuffer.initialize(width, height);
 
-    const planeMeshData = cs380.primitives.generatePlane(1,1);
+    const planeMeshData = cs380.primitives.generatePlane(2, 2);
     const planeMesh = cs380.Mesh.fromData(planeMeshData);
     const shader = await cs380.buildShader(MyShader);
     
@@ -250,21 +250,21 @@ class CameraEffectPip {
   }
 }
 export default class Assignment4 extends cs380.BaseApp {
-  updateUniforms = (time) => {
+  updateMaterialUniforms = (time) => {
     //console.log(this.isToonShading, this.isPerlinNoise, time);
     for (let i = 0; i < this.objectList.length; i++){
       this.objectList[i].uniforms.material.isToonShading = this.isToonShading;
       this.objectList[i].uniforms.material.isPerlinNoise = this.isPerlinNoise;
-      this.objectList[i].uniforms.material.perlin_area_size = this.perlin_area_size;      
+      this.objectList[i].uniforms.material.perlin_area_size = this.perlin_area_size;
       this.objectList[i].uniforms.material.time = time;
     }
   }
-  updateCameraEffect = (cameraMode) => {
-    this.cameraEffect = cameraMode
-    console.log(cameraMode)
-    let camera_mode_int = this.cameraModeMap[cameraMode]
+  updateCameraUniforms = () => {
+    let camera_mode_int = this.cameraModeMap[this.cameraEffect]
+    console.log(this.cameraEffect)
     console.log(camera_mode_int)
     this.cameraEffectPlane.image.uniforms.camera_mode = camera_mode_int
+    this.cameraEffectPlane.image.uniforms.fish_eye_power = this.fish_eye_power
   }
   setUniforms = (uniforms, ambientC = "#FFFFFF", diffuseC = "#FFFFFF", specularC = "#FFFFFF", mainC = "#FFFFFF") => {
     uniforms.mainColor = vec3.create();
@@ -660,6 +660,8 @@ export default class Assignment4 extends cs380.BaseApp {
       <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
       <label for="perlin-area-size">Perlin Area Size</label>
       <input type="range" min=0.1 max=10 value=1 step=0.01 id="perlin-area-size">
+      <label for="fish-eye-power">Fish Eye Power</label>
+      <input type="range" min=-0.5 max=0.5 value=0.1 step=0.01 id="fish-eye-power">
       <br/>
     <!-- Camera shutter UI --> 
     <audio id="shutter-sfx">
@@ -674,6 +676,7 @@ export default class Assignment4 extends cs380.BaseApp {
       <option value="ColorInversion">ColorInversion</option>
       <option value="Grayscale">Grayscale</option>
       <option value="Blurring">Blurring</option>
+      <option value="Fisheye">Fisheye</option>
     </select> <br/>
 
     <!-- OPTIONAL: Add more UI elements here --> 
@@ -704,6 +707,11 @@ export default class Assignment4 extends cs380.BaseApp {
         if (initialize) input.oninput();
       }
     }
+    setInputBehavior('setting-effect', false, false,
+      (val) => {
+        this.cameraEffect = val;
+        this.updateCameraUniforms();
+      });
     setInputBehavior('setting-ambient-illuminance', true, true,
         (val) => { 
           this.lights[0].illuminance=val;
@@ -743,6 +751,11 @@ export default class Assignment4 extends cs380.BaseApp {
     setInputBehavior("perlin-area-size", true, true, 
         (val) => { 
           this.perlin_area_size = val;
+        });
+    setInputBehavior("fish-eye-power", true, false, 
+        (val) => { 
+          this.fish_eye_power = val;
+          this.updateCameraUniforms();
         });
   }
   async handleSceneInput(){
@@ -830,14 +843,7 @@ export default class Assignment4 extends cs380.BaseApp {
     };
 
     this.cameraEffect = 'None';
-    cs380.utils.setInputBehavior(
-      'setting-effect',
-      (val) => {
-        this.updateCameraEffect(val);
-      },
-      false,
-      false
-    );
+    
   }
   async constructAnimation(){
     // Custom Animation Input
@@ -1420,10 +1426,10 @@ export default class Assignment4 extends cs380.BaseApp {
     const { width, height } = gl.canvas.getBoundingClientRect();
     const aspectRatio = width / height;
     this.camera = new cs380.Camera();
-    vec3.set(this.camera.transform.localPosition, 0, 0, 110);
+    vec3.set(this.camera.transform.localPosition, 0, 0, 70);
     mat4.perspective(
       this.camera.projectionMatrix,
-      (45 * Math.PI) / 180,
+      (90 * Math.PI) / 180,
       aspectRatio,
       0.01,
       1000
@@ -1453,8 +1459,8 @@ export default class Assignment4 extends cs380.BaseApp {
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
 
-    this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3}
-    this.cameraShader = await cs380.buildShader(PipEdgeShader);
+    this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3, 'Fisheye' : 4,}
+    this.cameraShader = await cs380.buildShader(MyShader);
     // Build Scene Models
     await this.buildModels();
 
@@ -1484,13 +1490,14 @@ export default class Assignment4 extends cs380.BaseApp {
     this.thingsToClear.push(this.cameraEffectPlane);
     await this.cameraEffectPlane.initialize(width, height,
       vec3.fromValues(0.0, 0.0, 0.0),
-      vec3.fromValues(2.0, 2.0, 1.0)
+      vec3.fromValues(1.0, 1.0, 1.0)
     )
     
     // SimpleOrbitControl && Toon Shading && Perlin Noise
     this.isToonShading = false;
     this.isPerlinNoise = false;
     this.perlin_area_size = 1.0;
+    this.fish_eye_power = 0.1;
 
     // GL settings
     gl.enable(gl.CULL_FACE);
@@ -1504,7 +1511,7 @@ export default class Assignment4 extends cs380.BaseApp {
   }
   update(elapsed, dt) {
     // TODO: Update objects here
-    this.updateUniforms(elapsed);
+    this.updateMaterialUniforms(elapsed);
 
     if (this.SelectedObjIdx == -1)
       this.simpleOrbitControl.update(dt);

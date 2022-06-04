@@ -25,7 +25,8 @@ export class MyShader extends cs380.BaseShader {
       useScreenSpace: gl.getUniformLocation(this.program, "useScreenSpace"),
       width: gl.getUniformLocation(this.program, 'width'),
       height: gl.getUniformLocation(this.program, 'height'),
-      camera_mode: gl.getUniformLocation(this.program, "camera_mode")
+      camera_mode: gl.getUniformLocation(this.program, "camera_mode"),
+      fish_eye_power: gl.getUniformLocation(this.program, "fish_eye_power")
 
     };
   }
@@ -43,6 +44,7 @@ export class MyShader extends cs380.BaseShader {
     this.setUniformInt(kv, "useScreenSpace", 0);
     this.setUniformFloat(kv, 'width', 0);
     this.setUniformFloat(kv, 'height', 0);
+    this.setUniformFloat(kv, 'fish_eye_power', 0);
 
   }
 }
