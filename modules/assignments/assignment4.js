@@ -265,6 +265,7 @@ export default class Assignment4 extends cs380.BaseApp {
     console.log(camera_mode_int)
     this.cameraEffectPlane.image.uniforms.camera_mode = camera_mode_int
     this.cameraEffectPlane.image.uniforms.fish_eye_power = this.fish_eye_power
+    this.cameraEffectPlane.image.uniforms.chromatic_abertion_power = this.chromatic_abertion_power
   }
   setUniforms = (uniforms, ambientC = "#FFFFFF", diffuseC = "#FFFFFF", specularC = "#FFFFFF", mainC = "#FFFFFF") => {
     uniforms.mainColor = vec3.create();
@@ -660,8 +661,11 @@ export default class Assignment4 extends cs380.BaseApp {
       <input type="range" min=0.1 max=10 value=0 step=0.1 id="setting-spotlight-smooth">
       <label for="perlin-area-size">Perlin Area Size</label>
       <input type="range" min=0.1 max=10 value=1 step=0.01 id="perlin-area-size">
+      <br/>
       <label for="fish-eye-power">Fish Eye Power</label>
       <input type="range" min=-0.5 max=0.5 value=0.1 step=0.01 id="fish-eye-power">
+      <label for="chromatic-abertion-power">Chromatic Abertion Power</label>
+      <input type="range" min=0.01 max=0.5 value=0.01 step=0.01 id="chromatic-abertion-power">
       <br/>
     <!-- Camera shutter UI --> 
     <audio id="shutter-sfx">
@@ -677,6 +681,7 @@ export default class Assignment4 extends cs380.BaseApp {
       <option value="Grayscale">Grayscale</option>
       <option value="Blurring">Blurring</option>
       <option value="Fisheye">Fisheye</option>
+      <option value="ChromaticAberration">ChromaticAberration</option>
     </select> <br/>
 
     <!-- OPTIONAL: Add more UI elements here --> 
@@ -755,6 +760,11 @@ export default class Assignment4 extends cs380.BaseApp {
     setInputBehavior("fish-eye-power", true, false, 
         (val) => { 
           this.fish_eye_power = val;
+          this.updateCameraUniforms();
+        });
+    setInputBehavior("chromatic-abertion-power", true, false, 
+        (val) => { 
+          this.chromatic_abertion_power = val;
           this.updateCameraUniforms();
         });
   }
@@ -1459,7 +1469,7 @@ export default class Assignment4 extends cs380.BaseApp {
     this.pickingBuffer.initialize(width, height);
     this.thingsToClear.push(this.pickingShader, this.pickingBuffer);
 
-    this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3, 'Fisheye' : 4,}
+    this.cameraModeMap = {'None' : 0, 'ColorInversion' : 1, 'Grayscale' : 2, 'Blurring' : 3, 'Fisheye' : 4, 'ChromaticAberration' : 5}
     this.cameraShader = await cs380.buildShader(MyShader);
     // Build Scene Models
     await this.buildModels();
@@ -1498,6 +1508,7 @@ export default class Assignment4 extends cs380.BaseApp {
     this.isPerlinNoise = false;
     this.perlin_area_size = 1.0;
     this.fish_eye_power = 0.1;
+    this.chromatic_abertion_power = 0.01;
 
     // GL settings
     gl.enable(gl.CULL_FACE);

@@ -10,6 +10,7 @@ uniform float width;
 uniform float height;
 uniform int camera_mode;
 uniform float fish_eye_power;
+uniform float chromatic_abertion_power;
 
 void pixels_3by3(inout vec4 n[9], sampler2D tex, vec2 coord){
 	float w = 1.0 / width; //interval of u between two fragments pixel
@@ -54,7 +55,7 @@ void main() {
 		return;
 	}
 	else if (camera_mode == 4){ // Fish Eye
-		vec2 center = vec2(0.5, 0.5 * width / height);
+		vec2 center = vec2(0.5, 0.5);
 		vec2 vector_vec = uv - center;
 		float dist_uv2center = length(vector_vec);
 		float power = (2.0 * 3.1415 / (2.0 * length(center))) * fish_eye_power;
@@ -73,8 +74,13 @@ void main() {
 		return;
 	}
 	else if (camera_mode == 5){
-
-		output_color = vec4(texture(mainTexture, uv).rgb, 1.0);
+		vec2 center = vec2(0.5, 0.5);
+		vec2 vector_vec = uv - center;
+		output_color = vec4(
+			texture(mainTexture, vector_vec * (1.0 - chromatic_abertion_power) + center)[0], 
+			texture(mainTexture, uv)[1], 
+			texture(mainTexture, vector_vec * (1.0 + chromatic_abertion_power) + center)[2], 1.0
+		);
 		return;
 	}
 	else{
