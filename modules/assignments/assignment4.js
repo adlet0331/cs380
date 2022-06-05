@@ -1342,20 +1342,31 @@ export default class Assignment4 extends cs380.BaseApp {
     let relativeCY = this.currMouseY / 401 - 1
     let relativeCZ
     
-    if (Math.pow(relativePX, 2) + Math.pow(relativePY, 2) >= 1) return;
-    if (Math.pow(relativeCX, 2) + Math.pow(relativeCY, 2) >=1) return;
+    if (relativePX * relativePX + relativePY * relativePY >= 1){
+      relativePZ = 0;
+    }
+    else{
+      relativePZ = Math.sqrt(1 - relativePX * relativePX - relativePY * relativePY)
+    }
     
-    relativePZ = Math.sqrt(1 - Math.pow(relativePX, 2.0) - Math.pow(relativePY, 2.0))
-    relativeCZ = Math.sqrt(1 - Math.pow(relativeCX, 2.0) - Math.pow(relativeCY, 2.0))
+    if (relativeCX * relativeCX + relativeCY * relativeCY >=1){
+      relativeCZ = 0;
+    }
+    else{
+      relativeCZ = Math.sqrt(1 - relativeCX * relativeCX - relativeCY * relativeCY )
+    }
+    
 
-    let start_point = vec3.fromValues(relativePX, relativePY, relativePZ);
-    let end_point = vec3.fromValues(relativeCX, relativeCY, relativeCZ);
+    let start_point = vec3.create()
+    vec3.normalize(start_point, vec3.fromValues(relativePX, relativePY, relativePZ));
+    let end_point = vec3.create()
+    vec3.normalize(end_point, vec3.fromValues(relativeCX, relativeCY, relativeCZ));
 
-    let angle = Math.acos(vec3.dot(start_point, end_point) / (vec3.length(start_point) * vec3.length(end_point)))
-    let cross_vec = vec3.create();
-    vec3.cross(cross_vec, start_point, end_point)
+    //let angle = Math.acos(vec3.dot(start_point, end_point) / (vec3.length(start_point) * vec3.length(end_point)))
+    let kvec = vec3.create();
+    vec3.cross(kvec, start_point, end_point)
     let rotate_quat = quat.create()
-    quat.setAxisAngle(rotate_quat, cross_vec, angle);
+    rotate_quat = quat.fromValues(kvec[0], kvec[1], kvec[2], vec3.dot(start_point, end_point));
 
     // let ux = cross_vec[0]
     // let uy = cross_vec[1]
