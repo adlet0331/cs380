@@ -1,5 +1,5 @@
 import gl from "../gl.js";
-import { vec3, mat4, quat } from "../cs380/gl-matrix.js";
+import { vec3, mat4, quat, vec2 } from "../cs380/gl-matrix.js";
 
 import * as cs380 from "../cs380/cs380.js";
 
@@ -631,9 +631,9 @@ export default class Assignment4 extends cs380.BaseApp {
     this.rightDownShoeCube = await this.generateMesh(shoesCubeMesh, this.shoescolor, 6, this.rightDownLegCube.transform, blinnPhongShader, this.lights);
     vec3.set(this.rightDownShoeCube.transform.localPosition, 0, -1.25, 0);
 
-    // ArcBall Cube
-    // this.ArcBallAttatchedCube = await this.generateMesh(arcBallCube , "#FF0000", 7, null, blinnPhongShader, this.lights);
-    // vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, -this.planeY / 2 + 10, 10)
+    //ArcBall Cube
+    this.ArcBallAttatchedCube = await this.generateMesh(arcBallCube , "#FF0000", 7, null, blinnPhongShader, this.lights);
+    vec3.set(this.ArcBallAttatchedCube.transform.localPosition, 10, -this.planeY / 2 + 10, 10)
   }
   async constructHTML(){
     document.getElementById("settings").innerHTML = `
@@ -797,7 +797,7 @@ export default class Assignment4 extends cs380.BaseApp {
     this.Idx2ArcTransform.push(this.rightArmjoint);
     this.Idx2ArcTransform.push(this.leftLegUpjoint.transform);
     this.Idx2ArcTransform.push(this.rightLegUpjoint.transform);
-    //this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
+    this.Idx2ArcTransform.push(this.ArcBallAttatchedCube.transform);
 
     // Animation Status Handling 
     this.animationStatusList = ["default", "walk", "sit", "hit", "jump", "swim"]
@@ -1337,24 +1337,41 @@ export default class Assignment4 extends cs380.BaseApp {
     //arcball center : 401, 401
     let relativePX = this.prevMouseX / 401 - 1
     let relativePY = this.prevMouseY / 401 - 1
+    let relativePZ
     let relativeCX = this.currMouseX / 401 - 1
     let relativeCY = this.currMouseY / 401 - 1
-
-    if (Math.pow(relativePX, 2) + Math.pow(relativePY, 2) >=1) return;
+    let relativeCZ
+    
+    if (Math.pow(relativePX, 2) + Math.pow(relativePY, 2) >= 1) return;
     if (Math.pow(relativeCX, 2) + Math.pow(relativeCY, 2) >=1) return;
+    
+    relativePZ = Math.sqrt(1 - Math.pow(relativePX, 2.0) - Math.pow(relativePY, 2.0))
+    relativeCZ = Math.sqrt(1 - Math.pow(relativeCX, 2.0) - Math.pow(relativeCY, 2.0))
 
-    let v1 = vec3.fromValues(relativePX, relativePY, Math.sqrt(1 - Math.pow(relativePX, 2) - Math.pow(relativePY, 2)));
-    let v2 = vec3.fromValues(relativeCX, relativeCY, Math.sqrt(1 - Math.pow(relativeCX, 2) - Math.pow(relativeCY, 2)));
-     
-    let angle = vec3.angle(v1, v2);
-    let axisVect = vec3.create()
-    vec3.cross(axisVect, v1, v2);
-    vec3.normalize(axisVect, axisVect);
+    let start_point = vec3.fromValues(relativePX, relativePY, relativePZ);
+    let end_point = vec3.fromValues(relativeCX, relativeCY, relativeCZ);
 
-    let rotateQuat = quat.create();
-    quat.setAxisAngle(rotateQuat, axisVect, angle)
-    quat.normalize(rotateQuat, rotateQuat)
-    quat.multiply(this.SelectedObject.localRotation, rotateQuat, this.SelectedObjectInitQuat)
+    let angle = Math.acos(vec3.dot(start_point, end_point) / (vec3.length(start_point) * vec3.length(end_point)))
+    let cross_vec = vec3.create();
+    vec3.cross(cross_vec, start_point, end_point)
+    let rotate_quat = quat.create()
+    quat.setAxisAngle(rotate_quat, cross_vec, angle);
+
+    // let ux = cross_vec[0]
+    // let uy = cross_vec[1]
+    // let uz = cross_vec[2]
+
+    // let sinv = Math.sin(angle)
+    // let cosv = Math.cos(angle)
+    // let RotationMat = mat4.fromValues(
+    //   ux * ux - (1.0 - ux * ux) * cosv,     ux * uy * (1.0 - cosv) - uz * sinv,   ux * uz * (1.0 - cosv) + uy * sinv,   0.0,
+    //   uy * ux * (1.0 - cosv) + uz * sinv,   uy * uy + (1.0 - uy * uy) * cosv,     uy * uz * (1.0 - cosv) - ux * sinv,   0.0,
+    //   uz * ux * (1.0 - cosv) - uy * sinv,   uz * uy * (1.0 - cosv) + ux * sinv,   uz * uz + (1.0 - uz * uz) * cosv,     0.0,
+    //   0.0, 0.0, 0.0, 1.0
+    // )
+    console.log(this.SelectedObject.localRotation)
+
+    quat.multiply(this.SelectedObject.localRotation, rotate_quat, this.SelectedObjectInitQuat)
   }
   finalize() {
     // Finalize WebGL objects (mesh, shader, texture, ...)
