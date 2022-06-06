@@ -1399,13 +1399,24 @@ export default class Assignment4 extends cs380.BaseApp {
     const textureLoader = cs380.TextureLoader.load({
       uv_checker: 'resources/uv_checker.png',
 
-      posX: 'resources/skybox/night_left.png',
-      negX: 'resources/skybox/night_right.png',
-      posY: 'resources/skybox/night_top.png',
-      negY: 'resources/skybox/night_bottom.png',
-      posZ: 'resources/skybox/night_front.png',
-      negZ: 'resources/skybox/night_back.png',
+      posX: 'resources/skybox/minecraft_snowvillage_left.png',
+      negX: 'resources/skybox/minecraft_snowvillage_right.png',
+      posY: 'resources/skybox/minecraft_snowvillage_top.png',
+      negY: 'resources/skybox/minecraft_snowvillage_bottom.png',
+      posZ: 'resources/skybox/minecraft_snowvillage_front.png',
+      negZ: 'resources/skybox/minecraft_snowvillage_back.png',
     });
+
+    // const textureLoader = cs380.TextureLoader.load({
+    //   uv_checker: 'resources/uv_checker.png',
+
+    //   posX: 'resources/skybox/skyboxSnow_left.jpg',
+    //   negX: 'resources/skybox/skyboxSnow_right.jpg',
+    //   posY: 'resources/skybox/skyboxSnow_top.jpg',
+    //   negY: 'resources/skybox/skyboxSnow_bottom.jpg',
+    //   posZ: 'resources/skybox/skyboxSnow_front.jpg',
+    //   negZ: 'resources/skybox/skyboxSnow_back.jpg',
+    // });
 
     const shaderLoader = cs380.ShaderLoader.load({
       skyboxShader: SkyboxShader.source,

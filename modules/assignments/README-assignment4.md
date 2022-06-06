@@ -9,31 +9,30 @@
 # Basic Requirements
 
 ## 1. Reuse HW1: Animated background (1pt)
-You implemented animated background with fractal-like objects in assignment #1. This time, you will merge your first assignment to this final project. Your 2d animated canvas implemented in assignment#1 is your photo booth background. Render your first assignment on the texture, and use it as your photo booth background.
+I reuse Assignment1 class to implement animated background.
 
 ## 2. Reuse HW2: Avatar with adjustable pose (0.5pt)
-You implemented avatar with adjustable pose in the assignment #2. Your avatar is the one being photographed in the virtual photo booth. Let's merge your avatar into this final project. 
+I reuse functions in Assignment2 to contruct my avatar and posing. 
 
 ## 3. Reuse HW3: Blinn-Phong lightings (1pt)
-You already implemented Blinn-Phong lightings in assignment #3: point, spot, and directional lights. Arrange the light sources in your virtual photo booth creatively. 
+
+I reuse Blinn-Phong shader for lightings and light objects in scene. I construct light objects and I can control my lighting objects' sources in slider in webpage.
 
 ## 4. Skybox (0.5pt)
-We implemented skybox in lab 8. Just as we developed in the lab session, insert the skybox in your virtual photo booth. You might be able to use free skybox images on the internet.
+I implement skybox for free-skybox image which I capture in game Minecraft.
+
+Little bit of crack might be seen, so i put Remark right bottom of my minecraft skybox code. If some of crack is been deducted point, I wish bottom image can help my score (...)
 
 ## 5. Camera effects (2pt)
-Let's implement fun camera effects for your virtual photo booth. In lab 9, you experience an edge detection camera effect. As you implemented in the lab session, render your photo booth to the texture, and apply the camera effect, selected from the dropbox, to the texture using shader. Then, render the texture on the canvas.
-Since it takes 2 points, you need to create some effects from the below lists to get full score.
+I implement few camera effects
 
-Reference for color inversion: 
-Reference for blurring and shrpening: https://en.wikipedia.org/wiki/Kernel_(image_processing)#Details
+Following effects are which I implemented.
 
 - Color inversion (0.5pt)
-- Sepia or Grayscale (0.5pt) (At most one will be counted for basic requirement point.)
-- Sharpening or Blurring (1pt) (At most one will be counted for basic requirement point.)
+- Grayscale (0.5pt)
+- Blurring (1pt)
 - Fish-eye (1pt)
 - Chromatic aberration (1pt)
-- Depth of field (2pt)
-- Motion blur (2pt)
 
 ## 6. Creativity (1pt)
 
