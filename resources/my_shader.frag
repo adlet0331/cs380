@@ -59,14 +59,12 @@ void main() {
 		vec2 vector_vec = uv - center;
 		float dist_uv2center = length(vector_vec);
 		float power = (2.0 * 3.1415 / (2.0 * length(center))) * fish_eye_power;
-		float bind = length(center);
 		vec2 final_pos;
 		if (power > 0.0){
-			final_pos = center + normalize(vector_vec) * tan(dist_uv2center * power) * bind / tan(bind * power);
+			final_pos = center + normalize(vector_vec) * tan(dist_uv2center * power) * length(center) / tan(length(center) * power);
 		}
 		else if (power < 0.0){
-			bind = 0.5;
-			final_pos = center + normalize(vector_vec) * atan(dist_uv2center * (-power) * 3.0) * bind / atan(-power * bind * 3.0);
+			final_pos = center + normalize(vector_vec) * atan(dist_uv2center * (-power) * 5.0) * 0.5 / atan(-power * 2.5);
 		}
 		else{ //power is 0
 			final_pos = uv;

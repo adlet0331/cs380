@@ -24,34 +24,37 @@ I implement skybox for free-skybox image which I capture in game Minecraft.
 Little bit of crack might be seen, so i put Remark right bottom of my minecraft skybox code. If some of crack is been deducted point, I wish bottom image can help my score (...)
 
 ## 5. Camera effects (2pt)
-I implement few camera effects
+I implement few camera effects. These camera effects are in webpage's selecting UI.
+
+I implement camera effects by changing uniforms of each material. 
+
+Those camera effects are in my_shader.frag
 
 Following effects are which I implemented.
 
 - Color inversion (0.5pt)
+
+I implement color inversion by subtracting origin rgb from vec3(1.0, 1.0, 1.0).
+
 - Grayscale (0.5pt)
+
+I implement grayscale by changing rgb to gray color by using some Formula which change rgb to gray color.
+
 - Blurring (1pt)
+
+I use $\frac{1}{9}* \begin{bmatrix}1&1&1\\1&1&1\\1&1&1\\\end{bmatrix}$ for blurring matrix.
+
 - Fish-eye (1pt)
+
 - Chromatic aberration (1pt)
 
 ## 6. Creativity (1pt)
 
-Briefly write down on your report in which part your creativity is shown.
-It can be the interesting choice of the objects or animation.
-Any artistic aspects of your assignment should be written here.
-(Any technical aspects should be written in basic requirements or challenges.)
+__Theme : Winter__
 
-## Specifications and Points
-
-| Specification                             | Point |
-| ----------------------------------------- | ----- |
-| 1. Reuse HW1: Animated background         | 1     |
-| 2. Reuse HW2: Avatar with adjustable pose | 0.5   |
-| 3. Reuse HW3: Blinn-Phong lightings       | 1     |
-| 4. Skybox                                 | 0.5   |
-| 5. Camera Effects                         | 2     |
-| 6. Creativity                             | 1     |
-| Total                                     | 6     |
+I got winter village's screenshot in minecraft by skybox .
+As there is lighthouse 3d object, snowflakes and winter tree plane.
+I want to show snowy village in the minecraft because my avatar is steve, which is main character in the game minecraft.
 
 # Challenges
 
@@ -68,58 +71,36 @@ Listed challenges are TA-recommended challenges which are helpful for the curren
 ## 0. Previous challenge lists
 
 - Assignment #1
-    - Keyframe-based 2D animation (1pt)
+    - ~~Keyframe-based 2D animation~~ (1pt)
 - Assignment #2
-    - Advanced keyframe-based 3D animation (1pt)
-    - Arcball (2pt)
+    - ~~Advanced keyframe-based 3D animation~~ ~~(1pt)~~ -> (0.5pt)
+    - ~~Arcball~~ (1pt)
+
 - Assignment #3
-    - Perlin noise (2pt)
-    - Toon shading (1pt)
+    - Perlin noise (2pt) (new Implement)
+    - ~~Toon shading (1pt)~~
 
-## 1. Bump map
-We already offered the code for computing tangent in 'modules/cs380/mesh.js'. If you build your mesh with the function buildMesh(mesh, data, **buildTangent = true**), tangent information is also saved to your mesh. Exploit tangent values, you can generate bump map. Please refer to your textbook 387 page for the implentation.
+__[Newaly implementation && reimplementation]__
 
-Reference: textbook 387p.
+- Arcball (ReImplement)
+I reimplement arcball in updateArcball(elapsed) function by using quaternion multiplication refered by paper in klms.
 
-wiki: https://en.wikipedia.org/wiki/Bump_mapping#Methods
+- Perlin noise (2pt) (new Implement)
+I implement perlin noise in blinn_phong.frag referring https://en.wikipedia.org/wiki/Perlin_noise.
+I made checkbox to turn on perlin noise, slider to resize grid of perlin noise in webpage.
 
-## 2. Fish-eye
-wiki: https://en.wikipedia.org/wiki/Fisheye_lens#Mapping_function
-## 3. Chromatic aberration
-wiki: https://en.wikipedia.org/wiki/Chromatic_aberration
+## 1. Fish-eye
 
-## 4. Depth of field
-Reference: textbook 404p.
+I implement Fish-Eye effect and reverse-fish-eye effect by using mapping method. 
 
-wiki: https://en.wikipedia.org/wiki/Depth_of_field
+Power of fish-eye effect can be controlled in slider in the ottom of webpage, "Fish Eye Power".
 
-## 5. Motion blur
-Reference: textbook 404p.
+## 2. Chromatic aberration
 
-wiki: https://en.wikipedia.org/wiki/Motion_blur#Computer_graphics
+I implement chromatic aberration by mapping color in same pixel's origin texture in different position in real texture.
 
-## 6. Shadow map with directional light
-Reference: textbook 300p.
+This power can be controlled in slider in the bottom of webpage, "Chromatic Abertion Power".
 
-## 7. Screen space ambient occlusion
-wiki: https://en.wikipedia.org/wiki/Screen_space_ambient_occlusion
-
-opengl resource: https://learnopengl.com/Advanced-Lighting/SSAO
-
-## 8. Screen space reflection
-https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
-
-
-| Challenge                     | Point |
-| ----------------------------- | ----- |
-| 1. Bump map                   | 1     | 
-| 2. Fish-eye                   | 1     | 
-| 3. Chromatic aberration       | 1     |
-| 4. Depth of field             | 2     |
-| 5. Motion blur                | 2     |
-| 6. Shadow map                 | 2     |
-| 7. Screen space ambient occlusion          | 3     |
-| 8. Screen space reflection    | 3     |
 
 ## Make-your-own challenge
 
